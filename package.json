@@ -1,0 +1,55 @@
+{
+  "name": "@dappnode/toolkit",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "The DappNode Toolkit is a collection of shared smart contracts, types, and utility functions that can be used across various DappNode projects. This toolkit aims to simplify development by providing reusable code and a consistent set of interfaces and types. The package includes modules for ACL, APM, Apps, EVMScript, Params, Registry, and Types, each with their own set of submodules and functionalities. The toolkit is designed to be extensible, allowing for the easy addition of new modules as needed. Additionally, the toolkit includes comprehensive testing functionality and documentation to ensure the quality and usability of the code.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "typechain": "typechain --target ethers-v5 --out-dir ./src/typechain './contracts_build/contracts*/*.json'",
+    "test:contracts": "mocha --config .mocharc.yml test/contracts/**/*.test.ts",
+    "truffle:compile:v0.4": "truffle compile --config ./truffle-config-v0.4.cjs",
+    "truffle:compile:v0.5": "truffle compile --config ./truffle-config-v0.5.cjs",
+    "truffle:develop:v0.5": "truffle develop --config ./truffle-config-v0.5.cjs",
+    "truffle:test:v0.4": "truffle test --config ./truffle-config-v0.4.cjs",
+    "truffle:test:v0.5": "truffle test --config ./truffle-config-v0.5.cjs",
+    "truffle:migrate:v0.4": "truffle migrate --config ./truffle-config-v0.4.cjs --reset --network development",
+    "truffle:migrate:v0.5": "truffle migrate --config ./truffle-config-v0.5.cjs --reset --network development"
+  },
+  "typechain": {
+    "outDir": "./src/typechain",
+    "target": "truffle-v5"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typechain/ethers-v5": "^10.2.0",
+    "@typechain/truffle-v5": "^8.0.2",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.15.11",
+    "@types/semver": "^7.3.13",
+    "chai": "^4.3.7",
+    "eslint": "^8.38.0",
+    "eslint-plugin-import": "^2.27.5",
+    "hardhat": "^2.14.0",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.7",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typechain": "^8.1.1",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "esm": "^3.2.25",
+    "ethers": "^5.7.2",
+    "ipfs-car": "^1.0.0",
+    "ipfs-http-client": "^60.0.0",
+    "is-ipfs": "^8.0.1",
+    "multiformats": "^11.0.2",
+    "semver": "^7.5.0",
+    "yaml": "^2.2.2"
+  }
+}
