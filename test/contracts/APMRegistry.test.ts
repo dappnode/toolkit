@@ -3,9 +3,9 @@ import { expect } from "chai";
 import {
   APMRegistry__factory,
   APMRegistry,
-} from "../../types/ethers-contracts/index.js";
+} from "../../src/typechain/index.js";
 
-describe.only("APMRegistry", () => {
+describe("APMRegistry", () => {
   const contractAddress = "0xc0109600808F57f04E1C4d469d3b6978d72DC67B";
   const repoName = "prysm.dnp.dappnode.eth";
   const prysmPraterIpfsHash =

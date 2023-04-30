@@ -3,7 +3,7 @@ import { expect } from "chai";
 import {
   DAppNodePackageDirectory__factory,
   DAppNodePackageDirectory,
-} from "../../types/ethers-contracts/index.js";
+} from "../../src/typechain/index.js";
 
 describe("DAppNodePackageDirectory", () => {
   let contract: DAppNodePackageDirectory;

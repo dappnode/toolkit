@@ -9,6 +9,7 @@
     "lint": "eslint . --ext .js",
     "format": "prettier --write \"src/**/*.ts\"",
     "typechain": "typechain --target ethers-v5 --out-dir ./src/typechain './contracts_build/contracts*/*.json'",
+    "test": "mocha --config .mocharc.yml test/**/*.test.ts",
     "test:contracts": "mocha --config .mocharc.yml test/contracts/**/*.test.ts",
     "truffle:compile:v0.4": "truffle compile --config ./truffle-config-v0.4.cjs",
     "truffle:compile:v0.5": "truffle compile --config ./truffle-config-v0.5.cjs",

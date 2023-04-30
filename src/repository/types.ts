@@ -32,7 +32,7 @@ export interface IpfsDagGetDirectory {
   Hash: string;
 }
 
-export declare enum IpfsClientTarget {
+export enum IpfsClientTarget {
   api = "api",
   gateway = "gateway",
 }
