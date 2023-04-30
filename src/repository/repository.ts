@@ -116,64 +116,77 @@ export class DappnodeRepository {
   public async getPkgRelease(_version?: string): Promise<PkgRelease> {
     if (!this.repoContract) this.repoContract = await this.getRepoContract();
     const { version, contentUri } = await this.getVersionAndIpfsHash(_version);
-    if (!isIPFS.cid(contentUri)) throw Error(`Invalid IPFS hash ${contentUri}`);
+    if (!isIPFS.cid(this.sanitizeIpfsPath(contentUri)))
+      throw Error(`Invalid IPFS hash ${contentUri}`);
 
     const ipfsEntries = await this.list(contentUri);
     // Get manifest
     if (!this.isDirectoryRelease(ipfsEntries))
       throw Error(`Invalid pkg release ${contentUri}, manifest not found`);
-    const manifest = await this.getPkgAsset<Manifest>(
-      contentUri,
-      releaseFilesToDownload.manifest,
-      "manifest"
-    );
-    const avatar = ipfsEntries.find((ipfsEntry) => {
-      ipfsEntry.name === manifest.avatar;
-    });
 
+    const manifest = await this.getPkgAsset<Manifest>(
+      releaseFilesToDownload.manifest,
+      this.getAssetIpfsEntry(
+        ipfsEntries,
+        releaseFilesToDownload.manifest
+      )?.cid.toString() || ""
+    );
+    const avatar = this.getAssetIpfsEntry(ipfsEntries, releaseFiles.avatar);
     return {
       imageFile: this.getImageByArch(
         manifest,
         ipfsEntries,
-        os.arch() as NodeArch
+        "x64" //os.arch() as NodeArch
       ),
       avatarFile: avatar
         ? { hash: avatar.cid.toString(), size: avatar.size, source }
         : undefined,
       manifest,
       compose: await this.getPkgAsset(
-        contentUri,
         releaseFilesToDownload.compose,
-        "compose"
+        this.getAssetIpfsEntry(
+          ipfsEntries,
+          releaseFilesToDownload.compose
+        )?.cid.toString() || ""
       ),
       signature: ipfsEntries.find((ipfsEntry) =>
         releaseFilesToDownload.signature.regex.test(ipfsEntry.name)
       )
         ? await this.getPkgAsset(
-            contentUri,
             releaseFilesToDownload.signature,
-            "signature"
+            this.getAssetIpfsEntry(
+              ipfsEntries,
+              releaseFilesToDownload.manifest
+            )?.cid.toString() || ""
           )
         : undefined,
       disclaimer: await this.getPkgAsset(
-        contentUri,
         releaseFilesToDownload.disclaimer,
-        "disclaimer"
+        this.getAssetIpfsEntry(
+          ipfsEntries,
+          releaseFilesToDownload.manifest
+        )?.cid.toString() || ""
       ),
       gettingStarted: await this.getPkgAsset(
-        contentUri,
         releaseFilesToDownload.gettingStarted,
-        "gettingStarted"
+        this.getAssetIpfsEntry(
+          ipfsEntries,
+          releaseFilesToDownload.manifest
+        )?.cid.toString() || ""
       ),
       prometheusTargets: await this.getPkgAsset(
-        contentUri,
         releaseFilesToDownload.prometheusTargets,
-        "prometheusTargets"
+        this.getAssetIpfsEntry(
+          ipfsEntries,
+          releaseFilesToDownload.manifest
+        )?.cid.toString() || ""
       ),
       grafanaDashboards: await this.getPkgAsset(
-        contentUri,
         releaseFilesToDownload.grafanaDashboards,
-        "grafanaDashboards"
+        this.getAssetIpfsEntry(
+          ipfsEntries,
+          releaseFilesToDownload.manifest
+        )?.cid.toString() || ""
       ),
     };
   }
@@ -181,11 +194,9 @@ export class DappnodeRepository {
   /**
    * Get a given release asset for a request
    */
-  public async getPkgAsset<T>(
-    hash: string,
-    config: FileConfig,
-    fileId: keyof DirectoryFiles
-  ): Promise<T> {
+  public async getPkgAsset<T>(config: FileConfig, hash: string): Promise<T> {
+    if (!hash && config.required)
+      throw Error(`Asset required but hash missing`);
     const { maxSize: maxLength, format } = config;
     const content = await this.writeFileToMemory(hash, maxLength);
     // TODO: validate content with JSON schema
@@ -396,6 +407,24 @@ export class DappnodeRepository {
     return ipfsEntries.some((file) =>
       releaseFiles.manifest.regex.test(file.name)
     );
+  }
+
+  /**
+   * Gets an IPFS entry for a given release file given a release file config
+   * If the ipfsEntry is not found and its required, it throws an error
+   * If the ipfsEntry is not found and its not required, it returns undefined
+   *
+   * The return type must ensure that the file is not undefined if required
+   * omit F
+   */
+  private getAssetIpfsEntry(
+    ipfsEntries: IPFSEntry[],
+    fileConfig: Omit<FileConfig, "format">
+  ): IPFSEntry | undefined {
+    const { regex, required } = fileConfig;
+    const entry = ipfsEntries.find((file) => regex.test(file.name));
+    if (!entry && required) throw Error(`Missing required file ${regex}`);
+    return entry;
   }
 
   /** ==== */

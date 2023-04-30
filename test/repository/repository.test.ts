@@ -15,7 +15,7 @@ describe.only("Dappnode Repository", function () {
       "e6c920580178424bbdf6dde266bfb5bd"
     );
     const dnpName = "prysm.dnp.dappnode.eth";
-    const ipfsUrl = "http://api.ipfs.dappnode.io";
+    const ipfsUrl = "https://api.ipfs.dappnode.io";
     const ipfsClientTarget = IpfsClientTarget.api;
 
     contract = new DappnodeRepository(
@@ -29,5 +29,10 @@ describe.only("Dappnode Repository", function () {
   it("Should get packages versions", async () => {
     const latest = await contract.getVersionAndIpfsHash("latest");
     console.log(latest);
+  });
+
+  it("Should get package manifest", async () => {
+    const pkgRelease = await contract.getPkgRelease("latest");
+    console.log(pkgRelease);
   });
 });
