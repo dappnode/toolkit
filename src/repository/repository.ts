@@ -8,7 +8,6 @@ import {
   IpfsClientTarget,
   PkgRelease,
   FileConfig,
-  DirectoryFiles,
   FileFormat,
   NodeArch,
   DistributedFile,
