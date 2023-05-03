@@ -5,15 +5,15 @@ import {
   IpfsClientTarget,
 } from "../../src/repository/index.js";
 
-describe.only("Dappnode Repository", function () {
+describe("Dappnode Repository", function () {
   this.timeout(100000);
   let contract: DappnodeRepository;
   const prysmVersion = "3.0.8";
 
-  before(async () => {
+  before(() => {
     const ethProvider = new ethers.providers.InfuraProvider(
       "mainnet",
-      "e6c920580178424bbdf6dde266bfb5bd"
+      process.env.INFURA_MAINNET_KEY
     );
     const dnpName = "prysm.dnp.dappnode.eth";
     const ipfsUrl = "https://api.ipfs.dappnode.io";
@@ -27,7 +27,7 @@ describe.only("Dappnode Repository", function () {
     );
   });
 
-  it(`Should get and validate packages versions from Prysm:${prysmVersion}`, async () => {
+  it(`Should get and validate package version for Prysm:${prysmVersion}`, async () => {
     const expectedVersionAndIpfsHash = {
       version: "3.0.8",
       contentUri: "/ipfs/QmZrZeQwMBBfSb6FQUcKdnB9epGmUzqarmkw2RbwTVQgbZ",
@@ -36,7 +36,7 @@ describe.only("Dappnode Repository", function () {
     expect(result).to.deep.equal(expectedVersionAndIpfsHash);
   });
 
-  it(`Should get and validate package release from Prysm:${prysmVersion}`, async () => {
+  it(`Should get and validate package release for Prysm:${prysmVersion}`, async () => {
     const expectedImageFile = {
       hash: "QmWcJrobqhHF7GWpqEbxdv2cWCCXbACmq85Hh7aJ1eu8rn",
       size: 64446140,
