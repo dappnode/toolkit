@@ -1,7 +1,7 @@
 export const fromBlock = 5254499;
-export const contractName = "directory";
-export const address = "0xf19F629642C6697Af77d8316BeF8DE0de3A27a70";
-export const abi = [
+export const directoryContractName = "directory";
+export const directoryAddress = "0xf19F629642C6697Af77d8316BeF8DE0de3A27a70";
+export const directoryAbi = [
   {
     constant: false,
     inputs: [

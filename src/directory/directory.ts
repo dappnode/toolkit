@@ -4,14 +4,14 @@ import {
   DAppNodePackageDirectory__factory,
 } from "../typechain/index.js";
 import { DirectoryDnp, DirectoryItem, directoryDnpStatus } from "./types.js";
-import { address } from "./params.js";
+import { directoryAddress } from "./params.js";
 
 export class DappNodeDirectory {
   directoryContract: DAppNodePackageDirectory;
 
   constructor(ethProvider: ethers.providers.Provider) {
     this.directoryContract = DAppNodePackageDirectory__factory.connect(
-      address,
+      directoryAddress,
       ethProvider
     );
   }

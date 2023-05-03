@@ -7,9 +7,9 @@ import {
 } from "./types.js";
 import { request, gql } from "graphql-request";
 import {
-  dnpAddress,
+  registryDnpAddress,
   dnpRegistryGraphEndpoint,
-  publicAddress,
+  registryPublicAddress,
   publicRegistryGraphEndpoint,
 } from "./params.js";
 
@@ -22,10 +22,10 @@ export class DappNodeRegistry {
   constructor(ethProvider: ethers.providers.Provider, registry: RegistryType) {
     this.registry = registry;
     if (registry === RegistryType.dnp) {
-      this.contractAddress = dnpAddress;
+      this.contractAddress = registryDnpAddress;
       this.graphEndpoint = dnpRegistryGraphEndpoint;
     } else {
-      this.contractAddress = publicAddress;
+      this.contractAddress = registryPublicAddress;
       this.graphEndpoint = publicRegistryGraphEndpoint;
     }
 

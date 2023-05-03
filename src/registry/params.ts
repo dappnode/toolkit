@@ -14,12 +14,13 @@ export const publicRegistryGraphEndpoint =
 //     3. Go to the source SC
 // This is because the SC is "upgradable".
 
-export const contractName = "registry";
-export const address = "0x1d9Bdf492e59A306DDa59E5aA13E7F1C7D89197A";
+export const registryContractName = "registry";
+export const registryAddress = "0x1d9Bdf492e59A306DDa59E5aA13E7F1C7D89197A";
 // public.dappnode.eth: 0x9f85ae5aefe4a3eff39d9a44212aae21dd15079aç
-export const publicAddress = "0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a";
+export const registryPublicAddress =
+  "0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a";
 // dnp.dappnode.eth: 0x266bfdb2124a68beb6769dc887bd655f78778923
-export const dnpAddress = "0x266bfdb2124a68beb6769dc887bd655f78778923";
+export const registryDnpAddress = "0x266bfdb2124a68beb6769dc887bd655f78778923";
 export const abi = [
   {
     constant: true,
