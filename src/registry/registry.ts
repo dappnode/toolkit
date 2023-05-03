@@ -6,7 +6,12 @@ import {
   RegistryType,
 } from "./types.js";
 import { request, gql } from "graphql-request";
-import { dnpAddress, publicAddress } from "./params.js";
+import {
+  dnpAddress,
+  dnpRegistryGraphEndpoint,
+  publicAddress,
+  publicRegistryGraphEndpoint,
+} from "./params.js";
 
 export class DappNodeRegistry {
   contractAddress: string;
@@ -18,12 +23,10 @@ export class DappNodeRegistry {
     this.registry = registry;
     if (registry === RegistryType.dnp) {
       this.contractAddress = dnpAddress;
-      this.graphEndpoint =
-        "https://api.studio.thegraph.com/query/45661/dappnode-registry/v0.0.3";
+      this.graphEndpoint = dnpRegistryGraphEndpoint;
     } else {
       this.contractAddress = publicAddress;
-      this.graphEndpoint =
-        "https://api.studio.thegraph.com/query/45661/public-registry/v0.1.0";
+      this.graphEndpoint = publicRegistryGraphEndpoint;
     }
 
     this.registryContract = APMRegistry__factory.connect(

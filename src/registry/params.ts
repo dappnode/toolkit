@@ -1,3 +1,8 @@
+export const dnpRegistryGraphEndpoint =
+  "https://api.studio.thegraph.com/query/45661/dappnode-registry/v0.0.3";
+export const publicRegistryGraphEndpoint =
+  "https://api.studio.thegraph.com/query/45661/public-registry/v0.1.0";
+
 // APM REGISTRY SMART CONTRACT: https://etherscan.io/address/0x1d9bdf492e59a306dda59e5aa13e7f1c7d89197a#code
 
 // This SC allows to create ENS for dappnode like public.dappnode.eth and dnp.public.eth
