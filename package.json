@@ -46,6 +46,7 @@
   "dependencies": {
     "esm": "^3.2.25",
     "ethers": "^5.7.2",
+    "graphql-request": "^6.0.0",
     "ipfs-car": "^1.0.0",
     "ipfs-http-client": "^60.0.0",
     "is-ipfs": "^8.0.1",
