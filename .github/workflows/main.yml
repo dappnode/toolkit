@@ -1,0 +1,44 @@
+# .github/workflows/main.yml
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  compile_smart_contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Compile smart contracts v0.4
+        run: npm run truffle:compile:v0.4
+
+      - name: Compile smart contracts v0.5
+        run: npm run truffle:compile:v0.5
+
+      - name: Create types with TypeChain
+        run: npm run typechain
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build TypeScript
+        run: npm run build
