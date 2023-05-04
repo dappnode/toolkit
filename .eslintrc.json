@@ -18,12 +18,11 @@
         "js": "always"
       }
     ],
-    "indent": ["error", 2],
-    "quotes": ["error", "single"],
     "semi": ["error", "always"],
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-function": "off"
   },
+
   "settings": {
     "import/resolver": {
       "node": {
