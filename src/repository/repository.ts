@@ -242,60 +242,64 @@ export class DappnodeRepository extends ApmRepository {
       readable = await this.unpackCarReader(carReader, root);
     }
 
-    return new Promise(async (resolve, reject): Promise<void> => {
-      if (!path || path.startsWith("/ipfs/") || !isAbsolute("/"))
-        reject(Error(`Invalid path: "${path}"`));
+    return new Promise((resolve, reject) => {
+      async function handleDownload(): Promise<void> {
+        if (!path || path.startsWith("/ipfs/") || !isAbsolute("/"))
+          reject(Error(`Invalid path: "${path}"`));
 
-      const asyncIterableArray: Uint8Array[] = [];
+        const asyncIterableArray: Uint8Array[] = [];
 
-      // Timeout cancel mechanism
-      const timeoutToCancel = setTimeout(() => {
-        reject(Error(`Timeout downloading ${hash}`));
-      }, timeout || 30 * 1000);
+        // Timeout cancel mechanism
+        const timeoutToCancel = setTimeout(() => {
+          reject(Error(`Timeout downloading ${hash}`));
+        }, timeout || 30 * 1000);
 
-      let totalData = 0;
-      let previousProgress = -1;
-      const resolution = 1;
-      const round = (n: number): number =>
-        resolution * Math.round((100 * n) / resolution);
+        let totalData = 0;
+        let previousProgress = -1;
+        const resolution = 1;
+        const round = (n: number): number =>
+          resolution * Math.round((100 * n) / resolution);
 
-      const onData = (chunk: Uint8Array): void => {
-        clearTimeout(timeoutToCancel);
-        totalData += chunk.length;
-        asyncIterableArray.push(chunk);
-        if (progress && fileSize) {
-          const currentProgress = round(totalData / fileSize);
-          if (currentProgress !== previousProgress) {
-            progress(currentProgress);
-            previousProgress = currentProgress;
-          }
-        }
-      };
-
-      const onFinish = (): void => {
-        clearTimeout(timeoutToCancel);
-        resolve();
-      };
-
-      const onError =
-        (streamId: string) =>
-        (err: Error): void => {
+        const onData = (chunk: Uint8Array): void => {
           clearTimeout(timeoutToCancel);
-          reject(Error(streamId + ": " + err));
+          totalData += chunk.length;
+          asyncIterableArray.push(chunk);
+          if (progress && fileSize) {
+            const currentProgress = round(totalData / fileSize);
+            if (currentProgress !== previousProgress) {
+              progress(currentProgress);
+              previousProgress = currentProgress;
+            }
+          }
         };
 
-      try {
-        for await (const chunk of readable) onData(chunk);
+        const onFinish = (): void => {
+          clearTimeout(timeoutToCancel);
+          resolve();
+        };
 
-        const writable = fs.createWriteStream(path);
-        await util.promisify(stream.pipeline)(
-          stream.Readable.from(asyncIterableArray),
-          writable
-        );
-        onFinish();
-      } catch (e) {
-        onError("Error writing to fs")(e as Error);
+        const onError =
+          (streamId: string) =>
+          (err: Error): void => {
+            clearTimeout(timeoutToCancel);
+            reject(Error(streamId + ": " + err));
+          };
+
+        try {
+          for await (const chunk of readable) onData(chunk);
+
+          const writable = fs.createWriteStream(path);
+          await util.promisify(stream.pipeline)(
+            stream.Readable.from(asyncIterableArray),
+            writable
+          );
+          onFinish();
+        } catch (e) {
+          onError("Error writing to fs")(e as Error);
+        }
       }
+
+      handleDownload().catch((error) => reject(error));
     });
   }
 
