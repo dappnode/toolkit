@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  compile_smart_contracts:
+  build_and_test:
     runs-on: ubuntu-latest
 
     steps:

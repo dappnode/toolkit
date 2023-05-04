@@ -178,9 +178,9 @@ export class DappnodeRepository extends ApmRepository {
     return this.parseAsset<T>(content, format);
   }
 
-  /** ==== */
-  /** IPFS */
-  /** ==== */
+  /** ===== */
+  /** UTILS */
+  /** ===== */
 
   /**
    * FOR IPFS API use standard endpoints: cat, ls, get, etc
@@ -309,7 +309,7 @@ export class DappnodeRepository extends ApmRepository {
    * - REMOTE: ipfs.dag.get => created a fake mock that returns same data structure
    * @param hash
    */
-  async list(hash: string): Promise<IPFSEntry[]> {
+  private async list(hash: string): Promise<IPFSEntry[]> {
     const files: IPFSEntry[] = [];
     if (this.ipfsClientTarget === IpfsClientTarget.api)
       for await (const file of this.ipfs.ls(hash)) files.push(file);
@@ -405,14 +405,6 @@ export class DappnodeRepository extends ApmRepository {
     if (!entry && required) throw Error(`Missing required file ${regex}`);
     return entry;
   }
-
-  /** ==== */
-  /** IPFS */
-  /** ==== */
-
-  /** ===== */
-  /** UTILS */
-  /** ===== */
 
   private getImageByArch(
     manifest: Manifest,
