@@ -13,6 +13,13 @@ import {
   publicRegistryGraphEndpoint,
 } from "./params.js";
 
+// TODO:
+// - Clean code
+// - Review tests
+// - Add utils tests
+// - Document functions
+// - Consider adding scanning functions for events
+
 export class DappNodeRegistry {
   contractAddress: string;
   registry: RegistryType;

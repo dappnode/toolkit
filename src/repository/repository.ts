@@ -1,10 +1,6 @@
-import { Repo__factory, Repo } from "../typechain/index.js";
 import { ethers } from "ethers";
-import { valid, parse } from "semver";
 import * as isIPFS from "is-ipfs";
 import {
-  ApmRepoVersionReturn,
-  ApmVersionRaw,
   IpfsClientTarget,
   PkgRelease,
   FileConfig,
@@ -33,38 +29,28 @@ import {
 } from "@dappnode/types";
 import YAML from "yaml";
 import os from "os";
+import { ApmRepository } from "./apmRepository.js";
+
+// TODO:
+// - Clean code
+// - Review tests: add tests for ipfs download content
+// - Add utils tests
+// - Document functions
+// - Add release fetcher for dependencies
+// - Split ipfs and eth classes :X:
 
 const source = "ipfs" as const;
 
-/**
- * The DappnodeRepository is a class that allows to interact with the Dappnode repository smart contract as well as:
- * - Resolve dependencies for a given package
- * - Fetches specific version of a package
- * - Fetches all version of a package
- * - Checks if a package exists (is published)
- * - Resolves a name and version of a package to an IPFS hash
- * - Gets the release assets for a request (pkg name and version)
- * - Gets the release and its dependencies assets for a request (pkg name and version)
- * - Get manifest for a given package
- */
-export class DappnodeRepository {
-  ethProvider: ethers.providers.Provider;
-  dnpName: string;
-  ipfs: IPFSHTTPClient;
-  ipfsClientTarget: IpfsClientTarget;
-  repoContract: Repo | undefined;
+export class DappnodeRepository extends ApmRepository {
+  protected ipfs: IPFSHTTPClient;
+  protected ipfsClientTarget: IpfsClientTarget;
 
   constructor(
-    ethProvider: ethers.providers.Provider,
-    dnpName: string,
     ipfsUrl: string,
-    ipfsClientTarget: IpfsClientTarget
+    ipfsClientTarget: IpfsClientTarget,
+    ethProvider: ethers.providers.Provider
   ) {
-    this.ethProvider = ethProvider;
-    // Only accept ENS names under the dnp.dappnode.eth and public.dappnode.eth domains
-    if (!dnpName.endsWith(".dappnode.eth"))
-      throw Error(`Invalid dnpName ${dnpName}`);
-    this.dnpName = dnpName;
+    super(ethProvider);
     this.ipfs = create({ url: ipfsUrl, timeout: 30 * 1000 });
     this.ipfsClientTarget = ipfsClientTarget;
   }
@@ -78,43 +64,33 @@ export class DappnodeRepository {
   }
 
   /**
-   * Initialize the instance by resolving the dnpName ENS to the smart contract address
-   * verifying that it resolves to a valid DappNodePackageDirectory contract
+   * Get multiple release assets for multiple requests
    */
-  private async getRepoContract(): Promise<Repo> {
-    const contractAddress = await this.ethProvider.resolveName(this.dnpName);
-    if (!contractAddress)
-      throw new Error(`Could not resolve name ${this.dnpName}`);
-
-    const repoContract = Repo__factory.connect(
-      contractAddress,
-      this.ethProvider
+  public async getPkgsReleases(packages: {
+    [name: string]: string;
+  }): Promise<PkgRelease[]> {
+    return await Promise.all(
+      Object.entries(packages).map(
+        async ([name, version]) =>
+          await this.getPkgRelease({ dnpName: name, _version: version })
+      )
     );
-    this.repoContract = repoContract;
-    return repoContract;
-  }
-
-  /**
-   * Get version and ipfs hash of a package. If the version is not specified, it will return the latest version
-   */
-  public async getVersionAndIpfsHash(version?: string): Promise<ApmVersionRaw> {
-    if (!this.repoContract) this.repoContract = await this.getRepoContract();
-    this.repoContract;
-    const res =
-      version && valid(version)
-        ? await this.repoContract.getBySemanticVersion(
-            this.toApmVersionArray(version)
-          )
-        : await this.repoContract.getLatest();
-    return this.parseApmVersionReturn(res);
   }
 
   /**
    * Get all the assets for a request
    */
-  public async getPkgRelease(_version?: string): Promise<PkgRelease> {
-    if (!this.repoContract) this.repoContract = await this.getRepoContract();
-    const { version, contentUri } = await this.getVersionAndIpfsHash(_version);
+  public async getPkgRelease({
+    dnpName,
+    _version,
+  }: {
+    dnpName: string;
+    _version?: string;
+  }): Promise<PkgRelease> {
+    const { version, contentUri } = await this.getVersionAndIpfsHash({
+      dnpName,
+      version: _version,
+    });
     if (!isIPFS.cid(this.sanitizeIpfsPath(contentUri)))
       throw Error(`Invalid IPFS hash ${contentUri}`);
 
@@ -506,33 +482,6 @@ export class DappnodeRepository {
   private sanitizeIpfsPath(ipfsPath: string): string {
     if (ipfsPath.includes("ipfs")) return ipfsPath.replace("/ipfs/", "");
     return ipfsPath;
-  }
-
-  /**
-   * Return a semantic version string into the APM version array format
-   * @param version "0.2.4"
-   */
-  private toApmVersionArray(version: string): [number, number, number] {
-    const semverObj = parse(version);
-    if (!semverObj) throw Error(`Invalid semver ${version}`);
-    return [semverObj.major, semverObj.minor, semverObj.patch];
-  }
-
-  /**
-   * Parse a raw version response from an APM repo
-   */
-  private parseApmVersionReturn(res: ApmRepoVersionReturn): {
-    version: string;
-    contentUri: string;
-  } {
-    if (!Array.isArray(res.semanticVersion))
-      throw Error(`property 'semanticVersion' must be an array`);
-    return {
-      version: res.semanticVersion.join("."),
-      // Second argument = true: ignore UTF8 parsing errors
-      // Let downstream code identify the content hash as wrong
-      contentUri: ethers.utils.toUtf8String(res.contentURI),
-    };
   }
 
   /** ===== */

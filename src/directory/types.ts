@@ -19,30 +19,7 @@ import { Manifest } from "@dappnode/types";
 /**
  * Information immediatelly available in the directory smart contract
  */
-interface DirectoryItemBasic {
-  index: number;
-  name: string;
-  whitelisted: boolean;
-  isFeatured: boolean;
-}
-export interface DirectoryItemOk extends DirectoryItemBasic {
-  status: "ok";
-  description: string;
-  avatarUrl: string;
-  isInstalled: boolean;
-  isUpdated: boolean;
-  featuredStyle?: {
-    featuredBackground?: string;
-    featuredColor?: string;
-    featuredAvatarFilter?: string;
-  };
-  categories: string[];
-}
-export interface DirectoryItemError extends DirectoryItemBasic {
-  status: "error";
-  message: string;
-}
-export type DirectoryItem = DirectoryItemOk | DirectoryItemError;
+
 export const directoryDnpStatus = ["Deleted", "Active", "Developing"] as const;
 export type DirectoryDnpStatus = (typeof directoryDnpStatus)[number];
 export interface DirectoryDnp {

@@ -7,32 +7,29 @@ import {
 
 describe("Dappnode Repository", function () {
   this.timeout(100000);
-  let contract: DappnodeRepository;
+  const ethProvider = new ethers.providers.InfuraProvider(
+    "mainnet",
+    "e6c920580178424bbdf6dde266bfb5bd"
+  );
+  const ipfsUrl = "https://api.ipfs.dappnode.io";
+  const ipfsClientTarget = IpfsClientTarget.api;
+  const prysmDnpName = "prysm.dnp.dappnode.eth";
   const prysmVersion = "3.0.8";
-
-  before(() => {
-    const ethProvider = new ethers.providers.InfuraProvider(
-      "mainnet",
-      process.env.INFURA_MAINNET_KEY
-    );
-    const dnpName = "prysm.dnp.dappnode.eth";
-    const ipfsUrl = "https://api.ipfs.dappnode.io";
-    const ipfsClientTarget = IpfsClientTarget.api;
-
-    contract = new DappnodeRepository(
-      ethProvider,
-      dnpName,
-      ipfsUrl,
-      ipfsClientTarget
-    );
-  });
+  const contract = new DappnodeRepository(
+    ipfsUrl,
+    ipfsClientTarget,
+    ethProvider
+  );
 
   it(`Should get and validate package version for Prysm:${prysmVersion}`, async () => {
     const expectedVersionAndIpfsHash = {
       version: "3.0.8",
       contentUri: "/ipfs/QmZrZeQwMBBfSb6FQUcKdnB9epGmUzqarmkw2RbwTVQgbZ",
     };
-    const result = await contract.getVersionAndIpfsHash(prysmVersion);
+    const result = await contract.getVersionAndIpfsHash({
+      dnpName: prysmDnpName,
+      version: prysmVersion,
+    });
     expect(result).to.deep.equal(expectedVersionAndIpfsHash);
   });
 
@@ -144,10 +141,23 @@ describe("Dappnode Repository", function () {
       volumes: { "beacon-chain-data": {}, "validator-data": {} },
     };
 
-    const pkgRelease = await contract.getPkgRelease(prysmVersion);
+    const pkgRelease = await contract.getPkgRelease({
+      dnpName: prysmDnpName,
+      _version: prysmVersion,
+    });
     expect(pkgRelease.manifest).to.deep.equal(expectedManifest);
     expect(pkgRelease.compose).to.deep.equal(expectedCompose);
     expect(pkgRelease.imageFile).to.deep.equal(expectedImageFile);
     expect(pkgRelease.avatarFile).to.deep.equal(expectedAvatarFile);
+  });
+
+  it(`Should get multiple pkgs releases: `, async () => {
+    const pkgReleases = await contract.getPkgsReleases({
+      [prysmDnpName]: prysmVersion,
+      "lodestar.dnp.dappnode.eth": "0.1.0",
+      "geth.dnp.dappnode.eth": "0.1.40",
+      "swarm.public.dappnode.eth": "1.0.17",
+    });
+    expect(pkgReleases).to.be.ok;
   });
 });

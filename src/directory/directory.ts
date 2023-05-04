@@ -3,8 +3,14 @@ import {
   DAppNodePackageDirectory,
   DAppNodePackageDirectory__factory,
 } from "../typechain/index.js";
-import { DirectoryDnp, DirectoryItem, directoryDnpStatus } from "./types.js";
+import { DirectoryDnp, directoryDnpStatus } from "./types.js";
 import { directoryAddress } from "./params.js";
+
+// TODO:
+// - Clean code
+// - Review tests
+// - Add utils tests
+// - Document functions
 
 export class DappNodeDirectory {
   directoryContract: DAppNodePackageDirectory;
@@ -94,8 +100,7 @@ export class DappNodeDirectory {
    * - normal #0
    * - normal #1
    * - normal #2
-   */
-  private sortDirectoryPkgs(dnps: DirectoryDnp[]): DirectoryDnp[] {
+   */ private sortDirectoryPkgs(dnps: DirectoryDnp[]): DirectoryDnp[] {
     const featured = dnps.filter((dnp) => dnp.isFeatured);
     const notFeatured = dnps.filter((dnp) => !dnp.isFeatured);
     return [
