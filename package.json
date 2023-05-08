@@ -44,7 +44,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@dappnode/types": "^0.1.2",
+    "@dappnode/types": "^0.1.7",
     "esm": "^3.2.25",
     "ethers": "^5.7.2",
     "graphql-request": "^6.0.0",
