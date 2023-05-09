@@ -71,8 +71,9 @@ export class DappNodeDirectory {
               isFeatured: featuredIndex > -1,
               featuredIndex: featuredIndex,
             };
-          } catch (e: any) {
-            e.message = `Error retrieving DNP #${i} from directory ${e}`;
+          } catch (e) {
+            if (e instanceof Error)
+              e.message = `Error retrieving DNP #${i} from directory ${e}`;
             console.log(e);
             return;
           }

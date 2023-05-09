@@ -459,14 +459,18 @@ export class DappnodeRepository extends ApmRepository {
           if (!parsedData || typeof parsedData === "string")
             throw Error(`returned invalid object`);
           return parsedData as T;
-        } catch (e: any) {
-          throw Error(`Error parsing YAML: ${e.message}`);
+        } catch (e) {
+          if (e instanceof Error)
+            e.message = `Error parsing YAML: ${e.message}`;
+          throw e;
         }
       case FileFormat.JSON:
         try {
           return JSON.parse(data);
-        } catch (e: any) {
-          throw Error(`Error parsing JSON: ${e.message}`);
+        } catch (e) {
+          if (e instanceof Error)
+            e.message = `Error parsing JSON: ${e.message}`;
+          throw e;
         }
       case FileFormat.TEXT:
         return data as T;
