@@ -9,7 +9,7 @@ import {
   DistributedFile,
 } from "./types.js";
 import { CID, IPFSHTTPClient, create } from "ipfs-http-client";
-import { CarReader } from "@ipld/car";
+import { CarReader, CarBufferReader, CarBlockIterator } from "@ipld/car";
 import { Block } from "ipfs-car";
 import { recursive as exporter } from "ipfs-unixfs-exporter";
 import { IPFSEntry } from "ipfs-core-types/src/root.js";
@@ -31,21 +31,26 @@ import YAML from "yaml";
 import os from "os";
 import { ApmRepository } from "./apmRepository.js";
 
-// TODO:
-// - Clean code
-// - Add comments
-// - Review tests: add tests for ipfs download content
-// - Add utils tests
-// - Document functions
-// - Add release fetcher for dependencies
-// - Split ipfs and eth classes :X:
+/**
+ * FOR IPFS API use standard endpoints: cat, ls, get, etc
+ * FOR IPFS GATEWAY use dag endpoints
+ */
 
 const source = "ipfs" as const;
 
+/**
+ * The DappnodeRepository class extends ApmRepository class to provide methods to interact with the IPFS network.
+ */
 export class DappnodeRepository extends ApmRepository {
   protected ipfs: IPFSHTTPClient;
   protected ipfsClientTarget: IpfsClientTarget;
 
+  /**
+   * Constructs an instance of DappnodeRepository
+   * @param ipfsUrl - The URL of the IPFS network node.
+   * @param ipfsClientTarget - The target type of the IPFS client.
+   * @param ethProvider - Ethereum network provider.
+   */
   constructor(
     ipfsUrl: string,
     ipfsClientTarget: IpfsClientTarget,
@@ -56,6 +61,11 @@ export class DappnodeRepository extends ApmRepository {
     this.ipfsClientTarget = ipfsClientTarget;
   }
 
+  /**
+   * Changes the IPFS provider and target.
+   * @param ipfsUrl - The new URL of the IPFS network node.
+   * @param ipfsClientTarget - The new target type of the IPFS client.
+   */
   public changeIpfsProviderAndTarget(
     ipfsUrl: string,
     ipfsClientTarget: IpfsClientTarget
@@ -66,27 +76,40 @@ export class DappnodeRepository extends ApmRepository {
 
   /**
    * Get multiple release assets for multiple requests
+   * @param packages - A dictionary of packages and their versions
+   * @returns - An array of release packages
    */
-  public async getPkgsReleases(packages: {
-    [name: string]: string;
-  }): Promise<PkgRelease[]> {
+  public async getPkgsReleases(
+    packages: {
+      [name: string]: string;
+    },
+    os?: NodeArch
+  ): Promise<PkgRelease[]> {
     return await Promise.all(
       Object.entries(packages).map(
         async ([name, version]) =>
-          await this.getPkgRelease({ dnpName: name, _version: version })
+          await this.getPkgRelease({
+            dnpName: name,
+            _version: version,
+            _os: os,
+          })
       )
     );
   }
 
   /**
    * Get all the assets for a request
+   * @param param0 - Object containing package name, version and architecture
+   * @returns - The release package for the request
    */
   public async getPkgRelease({
     dnpName,
     _version,
+    _os,
   }: {
     dnpName: string;
     _version?: string;
+    _os?: NodeArch;
   }): Promise<PkgRelease> {
     const { version, contentUri } = await this.getVersionAndIpfsHash({
       dnpName,
@@ -112,7 +135,7 @@ export class DappnodeRepository extends ApmRepository {
       imageFile: this.getImageByArch(
         manifest,
         ipfsEntries,
-        "x64" //os.arch() as NodeArch
+        _os || (os.arch() as NodeArch)
       ),
       avatarFile: avatar
         ? { hash: avatar.cid.toString(), size: avatar.size, source }
@@ -169,6 +192,9 @@ export class DappnodeRepository extends ApmRepository {
 
   /**
    * Get a given release asset for a request
+   * @param config - File configuration object
+   * @param hash - The IPFS hash of the asset
+   * @returns - The release package for the request
    */
   public async getPkgAsset<T>(config: FileConfig, hash: string): Promise<T> {
     if (!hash && config.required)
@@ -179,17 +205,14 @@ export class DappnodeRepository extends ApmRepository {
     return this.parseAsset<T>(content, format);
   }
 
-  /** ===== */
-  /** UTILS */
-  /** ===== */
-
   /**
-   * FOR IPFS API use standard endpoints: cat, ls, get, etc
-   * FOR IPFS GATEWAY use dag endpoints
-   */
-
-  /**
-   * Downloads and parses buffer to UTF8. Used for small files
+   * Downloads the content pointed by the given hash, parses it to UTF8 and returns it as a string.
+   * This function is intended for small files.
+   *
+   * @param hash - The content identifier (CID) of the file to download.
+   * @param maxLength - The maximum length of the file in bytes. If the downloaded file exceeds this length, an error is thrown.
+   * @returns The downloaded file content as a UTF8 string.
+   * @throws Error when the maximum size is exceeded.
    * @see catString
    * @see catCarReaderToMemory
    */
@@ -198,27 +221,47 @@ export class DappnodeRepository extends ApmRepository {
     maxLength?: number
   ): Promise<string> {
     const chunks = [];
-    if (this.ipfsClientTarget === IpfsClientTarget.api) {
+    if (this.ipfsClientTarget === IpfsClientTarget.api)
       for await (const chunk of this.ipfs.cat(hash, {
         length: maxLength,
       }))
         chunks.push(chunk);
-    } else {
+    else {
+      /**const contentVerified = await this.getAndVerifyContentFromGateway(hash);
+      const carBlockIterator = new CarBlockIterator(
+        contentVerified.carReader.version,
+        await contentVerified.carReader.getRoots(),
+        contentVerified.carReader.blocks()
+      );
+      for await (const block of carBlockIterator) chunks.push(block.bytes);*/
+      // TODO: issue with carHeader block
+      // IMPORTANT: Skip the first block for ipfs gateway, its the carHeader https://github.com/ipld/js-car/issues/139
       const blocksIterable: AsyncIterable<Block> = (
         await this.getAndVerifyContentFromGateway(hash)
       ).carReader.blocks();
       for await (const block of blocksIterable) chunks.push(block.bytes);
     }
+
     const buffer = Buffer.concat(chunks);
     if (maxLength && buffer.length >= maxLength)
       throw Error(`Maximum size ${maxLength} bytes exceeded`);
+
+    // TODO: the data encoding may be different from utf8, depending on the file type, we should detect it automatically. Consider using carHeader
     return buffer.toString("utf8");
   }
 
   /**
-   * Directly write the stream to the fs. Used for big files
-   * such as docker images
-   * @param args
+   * Downloads the content pointed by the given hash and writes it directly to the filesystem.
+   * This function is intended for large files, such as Docker images.
+   *
+   * @param args - The arguments object.
+   * @param args.hash - The content identifier (CID) of the file to download.
+   * @param args.path - The path where the file will be written.
+   * @param args.timeout - The maximum time to wait for the download in milliseconds.
+   * @param args.fileSize - The expected size of the file in bytes.
+   * @param args.progress - An optional function to call with the download progress.
+   * @returns A promise that resolves when the file has been written.
+   * @throws Error when a download timeout occurs or if the provided path is invalid.
    */
   private async writeFileToFs({
     hash,
@@ -305,11 +348,16 @@ export class DappnodeRepository extends ApmRepository {
   }
 
   /**
-   * List items contained in a CID hash.
+   * Lists the contents of a directory pointed by the given hash.
+   * The method used depends on the IPFS client target:
    * - LOCAL: ipfs.ls
-   * - REMOTE: ipfs.dag.get => created a fake mock that returns same data structure
-   * @param hash
+   * - REMOTE: ipfs.dag.get
+   *
+   * @param hash - The content identifier (CID) of the directory.
+   * @returns An array of entries in the directory.
+   * @throws Error when the provided hash is invalid.
    */
+
   private async list(hash: string): Promise<IPFSEntry[]> {
     const files: IPFSEntry[] = [];
     if (this.ipfsClientTarget === IpfsClientTarget.api)
@@ -334,7 +382,12 @@ export class DappnodeRepository extends ApmRepository {
   }
 
   /**
-   * Gets content and verify it from an IPFS GATEWAY using
+   * Gets the content from an IPFS gateway using the given hash and verifies its integrity.
+   * The content is returned as a CAR reader and the root CID.
+   *
+   * @param hash - The content identifier (CID) of the content to get and verify.
+   * @returns The content as a CAR reader and the root CID.
+   * @throws Error when the root CID does not match the provided hash (content is untrusted).
    */
   private async getAndVerifyContentFromGateway(hash: string): Promise<{
     carReader: CarReader;
@@ -345,14 +398,18 @@ export class DappnodeRepository extends ApmRepository {
     const carReader = await CarReader.fromIterable(asynciterable);
     const roots = await carReader.getRoots();
     const root = roots[0];
-    if (cid !== root)
+    if (cid.toString() !== root.toString())
       throw Error(`UNTRUSTED CONTENT: Invalid root CID ${root} for ${cid}`);
 
     return { carReader, root };
   }
 
   /**
-   * Unpack a car reader and returns an async iterable of uint8arrays
+   * Unpacks a CAR reader and returns an async iterable of uint8arrays.
+   *
+   * @param carReader - The CAR reader to unpack.
+   * @param root - The root CID.
+   * @returns An async iterable of uint8arrays.
    */
   private async unpackCarReader(
     carReader: CarReader,
@@ -379,9 +436,11 @@ export class DappnodeRepository extends ApmRepository {
   }
 
   /**
-   * Check if the IPFS path is a root directory
-   * by detecting the manifest in the files
-   * @param ipfsEntries IPFS files
+   * Checks if the IPFS path is a root directory
+   * by detecting the manifest in the files.
+   *
+   * @param ipfsEntries - IPFS files.
+   * @returns True if it is a root directory, false otherwise.
    */
   private async isDirectoryRelease(ipfsEntries: IPFSEntry[]): Promise<boolean> {
     return ipfsEntries.some((file) =>
@@ -390,12 +449,13 @@ export class DappnodeRepository extends ApmRepository {
   }
 
   /**
-   * Gets an IPFS entry for a given release file given a release file config
-   * If the ipfsEntry is not found and its required, it throws an error
-   * If the ipfsEntry is not found and its not required, it returns undefined
+   * Gets an IPFS entry for a given release file given a release file config.
+   * Throws an error if the IPFS entry is required but not found.
+   * Returns undefined if the IPFS entry is not required and not found.
    *
-   * The return type must ensure that the file is not undefined if required
-   * omit F
+   * @param ipfsEntries - An array of IPFS entries.
+   * @param fileConfig - A file configuration.
+   * @returns The matching IPFS entry, or undefined if not found and not required.
    */
   private getAssetIpfsEntry(
     ipfsEntries: IPFSEntry[],
@@ -407,6 +467,15 @@ export class DappnodeRepository extends ApmRepository {
     return entry;
   }
 
+  /**
+   * Gets an image by architecture from a set of IPFS entries.
+   * Throws an error if no image for the given architecture exists.
+   *
+   * @param manifest - The manifest containing information about the package.
+   * @param files - An array of IPFS entries.
+   * @param nodeArch - The architecture of the node.
+   * @returns The distributed file object of the image.
+   */
   private getImageByArch(
     manifest: Manifest,
     files: IPFSEntry[],
@@ -452,6 +521,14 @@ export class DappnodeRepository extends ApmRepository {
     }
   }
 
+  /**
+   * Parses asset data into the specified format (YAML, JSON, or TEXT).
+   * Throws an error if an unknown format is specified.
+   *
+   * @param data - The asset data to parse.
+   * @param format - The format to parse the data into.
+   * @returns The parsed data.
+   */
   private parseAsset<T>(data: string, format: FileFormat): T {
     switch (format) {
       case FileFormat.YAML:
@@ -463,6 +540,7 @@ export class DappnodeRepository extends ApmRepository {
         } catch (e) {
           if (e instanceof Error)
             e.message = `Error parsing YAML: ${e.message}`;
+          console.log(data);
           throw e;
         }
       case FileFormat.JSON:
@@ -480,12 +558,14 @@ export class DappnodeRepository extends ApmRepository {
     }
   }
 
+  /**
+   * Sanitizes an IPFS path by removing "/ipfs/" if it is present.
+   *
+   * @param ipfsPath - The IPFS path to sanitize.
+   * @returns The sanitized IPFS path.
+   */
   private sanitizeIpfsPath(ipfsPath: string): string {
     if (ipfsPath.includes("ipfs")) return ipfsPath.replace("/ipfs/", "");
     return ipfsPath;
   }
-
-  /** ===== */
-  /** UTILS */
-  /** ===== */
 }
