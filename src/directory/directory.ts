@@ -6,15 +6,16 @@ import {
 import { DirectoryDnp, directoryDnpStatus } from "./types.js";
 import { directoryAddress } from "./params.js";
 
-// TODO:
-// - Clean code
-// - Review tests
-// - Add utils tests
-// - Document functions
-
+/**
+ * DappNodeDirectory is a class to interact with the DAppNode Directory Contract.
+ */
 export class DappNodeDirectory {
-  directoryContract: DAppNodePackageDirectory;
+  private directoryContract: DAppNodePackageDirectory;
 
+  /**
+   * Class constructor
+   * @param ethProvider - The ethers provider to interact with the Ethereum network.
+   */
   constructor(ethProvider: ethers.providers.Provider) {
     this.directoryContract = DAppNodePackageDirectory__factory.connect(
       directoryAddress,
@@ -22,86 +23,114 @@ export class DappNodeDirectory {
     );
   }
 
+  /**
+   * Fetches all packages from the DAppNode Directory Contract.
+   * @returns - A promise that resolves to an array of DirectoryDnp objects.
+   */
   public async getDirectoryPkgs(): Promise<DirectoryDnp[]> {
-    const numberOfDappnodePackages = (
-      await this.directoryContract.numberOfDAppNodePackages()
-    ).toNumber();
+    const numberOfDappnodePackages = await this.fetchNumberOfPackages();
+    const featuredIndexes = await this.fetchFeaturedPackagesIndexes();
 
-    // Get featured packages list
-    // 0x0b00000000000000000000000000000000000000000000000000000000000000
+    const directoryPkgs = await this.fetchPackageDetails(
+      numberOfDappnodePackages,
+      featuredIndexes
+    );
+
+    return this.sortDirectoryPkgs(directoryPkgs);
+  }
+
+  /**
+   * Fetches the number of Dappnode packages from the contract.
+   * @returns - A promise that resolves to the number of Dappnode packages.
+   */
+  private async fetchNumberOfPackages(): Promise<number> {
+    return (await this.directoryContract.numberOfDAppNodePackages()).toNumber();
+  }
+
+  /**
+   * Fetches the indexes of featured packages from the contract.
+   * @returns - A promise that resolves to an array of featured packages indexes.
+   */
+  private async fetchFeaturedPackagesIndexes(): Promise<number[]> {
     const featuredBytes = await this.directoryContract.featured();
-    // ["0b", "00", ...]
-    /**
-     * 1. Strip hex prefix
-     * 2. Split by substrings of 2 characters
-     * 3. Remove 0 indexes
-     * 4. Remove duplicate indexes
-     * 5. Base64 to decimal index
-     */
-    const featuredIndexes: number[] = (
-      featuredBytes.replace("0x", "").match(/.{1,2}/g) ?? []
-    )
+
+    return (featuredBytes.replace("0x", "").match(/.{1,2}/g) ?? [])
       .filter((value: string) => value !== "00")
       .filter(
         (value: string, index: number, self: string[]) =>
           self.indexOf(value) === index
       )
       .map((base64: string) => parseInt(base64, 16));
+  }
 
-    const directoryPkgs = await Promise.all(
-      Array.from({ length: numberOfDappnodePackages }, (_, i) => i).map(
-        async (i) => {
-          try {
-            const {
-              name,
-              status: statusBn,
-              position: positionBn,
-            } = await this.directoryContract.getPackage(i);
-            const status = statusBn.toNumber();
-            const position = positionBn.toNumber();
-
-            // Make sure the DNP is not Deprecated or Deleted
-            if (!this.isEnsDomain(name) || status === 0) return;
-
-            const featuredIndex = featuredIndexes.indexOf(i);
-            return {
-              name,
-              statusName: directoryDnpStatus[status],
-              position,
-              isFeatured: featuredIndex > -1,
-              featuredIndex: featuredIndex,
-            };
-          } catch (e) {
-            if (e instanceof Error)
-              e.message = `Error retrieving DNP #${i} from directory ${e}`;
-            console.log(e);
-            return;
-          }
-        }
-      )
+  /**
+   * Fetches the details of all packages from the contract.
+   * @param numberOfPackages - The total number of packages.
+   * @param featuredIndexes - The indexes of featured packages.
+   * @returns - A promise that resolves to an array of package details.
+   */
+  private async fetchPackageDetails(
+    numberOfPackages: number,
+    featuredIndexes: number[]
+  ): Promise<DirectoryDnp[]> {
+    const packageIndices = Array.from(
+      { length: numberOfPackages },
+      (_, i) => i
     );
 
-    return this.sortDirectoryPkgs(
-      directoryPkgs.filter(
-        (dnp) => typeof dnp !== "undefined"
-      ) as DirectoryDnp[]
+    const packages = await Promise.all(
+      packageIndices.map((i) => this.fetchPackageDetail(i, featuredIndexes))
+    );
+
+    return packages.filter(
+      (dnp): dnp is DirectoryDnp => typeof dnp !== "undefined"
     );
   }
 
-  // public async getDirectoryPkgsReleases(): Promise<DirectoryItem[]> {}
-
   /**
-   * UTILS
+   * Fetches the details of a package from the contract.
+   * @param index - The index of the package.
+   * @param featuredIndexes - The indexes of featured packages.
+   * @returns - A promise that resolves to the package details or undefined if there was an error.
    */
+  private async fetchPackageDetail(
+    index: number,
+    featuredIndexes: number[]
+  ): Promise<DirectoryDnp | undefined> {
+    try {
+      const {
+        name,
+        status: statusBn,
+        position: positionBn,
+      } = await this.directoryContract.getPackage(index);
+      const status = statusBn.toNumber();
+
+      if (!this.isEnsDomain(name) || status === 0) return;
+
+      const featuredIndex = featuredIndexes.indexOf(index);
+      return {
+        name,
+        statusName: directoryDnpStatus[status],
+        position: positionBn.toNumber(),
+        isFeatured: featuredIndex > -1,
+        featuredIndex: featuredIndex,
+      };
+    } catch (e) {
+      if (e instanceof Error)
+        e.message = `Error retrieving DNP #${index} from directory ${e}`;
+      console.log(e);
+      return;
+    }
+  }
 
   /**
-   * Sorts a directory with the following order
-   * - featured #0
-   * - featured #1
-   * - normal #0
-   * - normal #1
-   * - normal #2
-   */ private sortDirectoryPkgs(dnps: DirectoryDnp[]): DirectoryDnp[] {
+   * Sorts an array of DirectoryDnp objects.
+   * First by the featured packages in order of their featured index,
+   * then by the non-featured packages in descending order of their position.
+   * @param dnps - An array of DirectoryDnp objects.
+   * @returns - The sorted array of DirectoryDnp objects.
+   */
+  private sortDirectoryPkgs(dnps: DirectoryDnp[]): DirectoryDnp[] {
     const featured = dnps.filter((dnp) => dnp.isFeatured);
     const notFeatured = dnps.filter((dnp) => !dnp.isFeatured);
     return [
@@ -110,16 +139,19 @@ export class DappNodeDirectory {
     ];
   }
 
+  /**
+   * Checks if a domain name is a valid ENS domain.
+   * @param ensDomain - The domain name to check.
+   * @returns - True if the domain name is valid, false otherwise.
+   */
   private isEnsDomain(ensDomain: string): boolean {
     const supportedDomains = ["eth"];
 
     if (!ensDomain || typeof ensDomain !== "string") return false;
     if (ensDomain.includes("/")) return false;
     if (!ensDomain.includes(".")) return false;
-    // "kovan.dnp.dappnode.eth" => "eth"
+
     const domain = ensDomain.split(".").slice(-1)[0] || "";
-    if (!supportedDomains.includes(domain)) return false;
-    // If any negative condition was matched:
-    return true;
+    return supportedDomains.includes(domain);
   }
 }

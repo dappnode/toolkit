@@ -33,6 +33,7 @@ import { ApmRepository } from "./apmRepository.js";
 
 // TODO:
 // - Clean code
+// - Add comments
 // - Review tests: add tests for ipfs download content
 // - Add utils tests
 // - Document functions

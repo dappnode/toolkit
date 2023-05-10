@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { DappNodeDirectory } from "../../src/directory/index.js";
 import { expect } from "chai";
 
-describe("Dappnode Directory", function () {
+describe.only("Dappnode Directory", function () {
   this.timeout(100000);
   const ethProvider = new ethers.providers.InfuraProvider(
     "mainnet",
