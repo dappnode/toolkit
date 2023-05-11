@@ -9,7 +9,7 @@ import path from "path";
 import fs from "fs";
 import { createHash } from "crypto";
 
-describe.only("Dappnode Repository", function () {
+describe("Dappnode Repository", function () {
   const ipfsProviders = [
     {
       ipfsUrl: "https://api.ipfs.dappnode.io",
