@@ -254,7 +254,7 @@ export class DappnodeRepository extends ApmRepository {
    * @returns A promise that resolves when the file has been written.
    * @throws Error when a download timeout occurs or if the provided path is invalid.
    */
-  private async writeFileToFs({
+  public async writeFileToFs({
     hash,
     path,
     timeout,

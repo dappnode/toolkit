@@ -4,6 +4,10 @@ import {
   DappnodeRepository,
   IpfsClientTarget,
 } from "../../src/repository/index.js";
+import { cleanTestDir, testDir } from "../testUtils.js";
+import path from "path";
+import fs from "fs";
+import { createHash } from "crypto";
 
 describe.only("Dappnode Repository", function () {
   const ipfsProviders = [
@@ -16,6 +20,10 @@ describe.only("Dappnode Repository", function () {
       ipfsClientTarget: IpfsClientTarget.gateway,
     },
   ];
+
+  before(() => {
+    cleanTestDir();
+  });
 
   for (const { ipfsUrl, ipfsClientTarget } of ipfsProviders) {
     this.timeout(100000);
@@ -178,8 +186,47 @@ describe.only("Dappnode Repository", function () {
       expect(pkgReleases).to.be.ok;
     });
 
-    it(`[${ipfsClientTarget}] Shoukd get content to memory`, async () => {});
+    it(`[${ipfsClientTarget}] Should write avatar file to filesystem and verify its hash`, async () => {
+      const expectedHash =
+        "c69e3bdc66446d32c1ed91f3d2e5a4e56ccde571668c85e15a23ef3613c31cb8";
+      const avatarFileName = "avatar.png";
+      const avatarFileExample = {
+        hash: "QmeZBTEAf3bXJreBECaMhHa53bhCPqvSwVng8q1UnPoL4L",
+        size: ipfsClientTarget === IpfsClientTarget.api ? 4292 : 4303,
+        source: "ipfs",
+      };
 
-    it(`[${ipfsClientTarget}] Shoukd get content to filesystem`, async () => {});
+      await contract.writeFileToFs({
+        hash: avatarFileExample.hash,
+        path: path.join(testDir, avatarFileName),
+        fileSize: avatarFileExample.size,
+      });
+
+      const buffer = fs.readFileSync(path.join(testDir, avatarFileName));
+      const hash = createHash("sha256").update(buffer).digest("hex");
+      expect(hash).to.equal(expectedHash);
+    });
+
+    it(`[${ipfsClientTarget}] Should write docker image file to filesystem and verify its hash`, async () => {
+      const expectedHash =
+        "1f838c82a415bf82fa98171206f25827dd4cb93234bbf24b58969cd6ef2df159";
+      const dockerImageFileName =
+        "prysm.dnp.dappnode.eth_3.0.8_linux-amd64.txz";
+      const dockerImageFileExample = {
+        hash: "QmWcJrobqhHF7GWpqEbxdv2cWCCXbACmq85Hh7aJ1eu8rn",
+        size: ipfsClientTarget === IpfsClientTarget.api ? 64446140 : 64461521,
+        source: "ipfs",
+      };
+
+      await contract.writeFileToFs({
+        hash: dockerImageFileExample.hash,
+        path: path.join(testDir, dockerImageFileName),
+        fileSize: dockerImageFileExample.size,
+      });
+
+      const buffer = fs.readFileSync(path.join(testDir, dockerImageFileName));
+      const hash = createHash("sha256").update(buffer).digest("hex");
+      expect(hash).to.equal(expectedHash);
+    });
   }
 });
