@@ -47,12 +47,12 @@ describe.only("Dappnode Repository", function () {
     it(`[${ipfsClientTarget}] Should get and validate package release for Prysm:${prysmVersion}`, async () => {
       const expectedImageFile = {
         hash: "QmWcJrobqhHF7GWpqEbxdv2cWCCXbACmq85Hh7aJ1eu8rn",
-        size: 64446140,
+        size: ipfsClientTarget === IpfsClientTarget.api ? 64446140 : 64461521,
         source: "ipfs",
       };
       const expectedAvatarFile = {
         hash: "QmeZBTEAf3bXJreBECaMhHa53bhCPqvSwVng8q1UnPoL4L",
-        size: 4292,
+        size: ipfsClientTarget === IpfsClientTarget.api ? 4292 : 4303,
         source: "ipfs",
       };
       const expectedManifest = {

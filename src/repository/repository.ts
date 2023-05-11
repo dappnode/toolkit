@@ -9,8 +9,7 @@ import {
   DistributedFile,
 } from "./types.js";
 import { CID, IPFSHTTPClient, create } from "ipfs-http-client";
-import { CarReader, CarBufferReader, CarBlockIterator } from "@ipld/car";
-import { Block } from "ipfs-car";
+import { CarReader } from "@ipld/car";
 import { recursive as exporter } from "ipfs-unixfs-exporter";
 import { IPFSEntry } from "ipfs-core-types/src/root.js";
 import { Version } from "multiformats";
@@ -221,25 +220,17 @@ export class DappnodeRepository extends ApmRepository {
     maxLength?: number
   ): Promise<string> {
     const chunks = [];
-    if (this.ipfsClientTarget === IpfsClientTarget.api)
+    if (this.ipfsClientTarget === IpfsClientTarget.api) {
       for await (const chunk of this.ipfs.cat(hash, {
         length: maxLength,
       }))
         chunks.push(chunk);
-    else {
-      /**const contentVerified = await this.getAndVerifyContentFromGateway(hash);
-      const carBlockIterator = new CarBlockIterator(
-        contentVerified.carReader.version,
-        await contentVerified.carReader.getRoots(),
-        contentVerified.carReader.blocks()
+    } else {
+      const { carReader, root } = await this.getAndVerifyContentFromGateway(
+        hash
       );
-      for await (const block of carBlockIterator) chunks.push(block.bytes);*/
-      // TODO: issue with carHeader block
-      // IMPORTANT: Skip the first block for ipfs gateway, its the carHeader https://github.com/ipld/js-car/issues/139
-      const blocksIterable: AsyncIterable<Block> = (
-        await this.getAndVerifyContentFromGateway(hash)
-      ).carReader.blocks();
-      for await (const block of blocksIterable) chunks.push(block.bytes);
+      const content = await this.unpackCarReader(carReader, root);
+      for await (const chunk of content) chunks.push(chunk);
     }
 
     const buffer = Buffer.concat(chunks);
@@ -350,8 +341,10 @@ export class DappnodeRepository extends ApmRepository {
   /**
    * Lists the contents of a directory pointed by the given hash.
    * The method used depends on the IPFS client target:
-   * - LOCAL: ipfs.ls
-   * - REMOTE: ipfs.dag.get
+   * - Local: ipfs.ls => returns `size`!
+   * - Remote: ipfs.dag.get => reutrns `Tsize`!
+   *
+   * TODO: research why the size is different, i.e for the hash QmWcJrobqhHF7GWpqEbxdv2cWCCXbACmq85Hh7aJ1eu8rn Tsize is 64461521 and size is 64446140
    *
    * @param hash - The content identifier (CID) of the directory.
    * @returns An array of entries in the directory.
@@ -373,11 +366,10 @@ export class DappnodeRepository extends ApmRepository {
             cid: CID.parse(this.sanitizeIpfsPath(link.Hash.toString())),
             name: link.Name,
             path: path.join(link.Hash.toString(), link.Name),
-            size: link.Size,
+            size: link.Tsize,
           });
       else throw Error(`Invalid IPFS hash ${hash}`);
     }
-
     return files;
   }
 
@@ -540,7 +532,6 @@ export class DappnodeRepository extends ApmRepository {
         } catch (e) {
           if (e instanceof Error)
             e.message = `Error parsing YAML: ${e.message}`;
-          console.log(data);
           throw e;
         }
       case FileFormat.JSON:
