@@ -3,15 +3,26 @@ import { valid, parse } from "semver";
 import { Repo__factory, Repo } from "../typechain/index.js";
 import { ApmRepoVersionReturn, ApmVersionRaw } from "./types.js";
 
+/**
+ * ApmRepository is a class to interact with the DAppNode APM Repository Contract.
+ */
 export class ApmRepository {
-  protected ethProvider: ethers.providers.Provider;
+  private ethProvider: ethers.providers.Provider;
+
+  /**
+   * Class constructor
+   * @param ethProvider - The ethers provider to interact with the Ethereum network.
+   */
   constructor(ethProvider: ethers.providers.Provider) {
     this.ethProvider = ethProvider;
   }
 
   /**
-   * Initialize the instance by resolving the dnpName ENS to the smart contract address
-   * verifying that it resolves to a valid DappNodePackageDirectory contract
+   * Fetches the smart contract address for the given DNP name
+   * by resolving the ENS name.
+   * Verifies that it resolves to a valid DappNodePackageDirectory contract.
+   * @param dnpName - The name of the DNP to resolve.
+   * @returns - A promise that resolves to the Repo instance.
    */
   private async getRepoContract(dnpName: string): Promise<Repo> {
     const contractAddress = await this.ethProvider.resolveName(
@@ -22,7 +33,11 @@ export class ApmRepository {
   }
 
   /**
-   * Get version and ipfs hash of a package. If the version is not specified, it will return the latest version
+   * Fetches the version and IPFS hash of a package.
+   * If the version is not specified, it returns the latest version.
+   * @param dnpName - The name of the DNP.
+   * @param version - The version of the DNP (optional).
+   * @returns - A promise that resolves to the raw APM version.
    */
   public async getVersionAndIpfsHash({
     dnpName,
@@ -38,12 +53,14 @@ export class ApmRepository {
             this.toApmVersionArray(version)
           )
         : await repoContract.getLatest();
+
     return this.parseApmVersionReturn(res);
   }
 
   /**
-   * Return a semantic version string into the APM version array format
-   * @param version "0.2.4"
+   * Converts a semantic version string into the APM version array format.
+   * @param version - The semantic version string.
+   * @returns - The APM version array.
    */
   private toApmVersionArray(version: string): [number, number, number] {
     const semverObj = parse(version);
@@ -52,7 +69,9 @@ export class ApmRepository {
   }
 
   /**
-   * Parse a raw version response from an APM repo
+   * Parses the raw version response from an APM repo.
+   * @param res - The raw version response from the APM repo.
+   * @returns - The parsed APM version.
    */
   private parseApmVersionReturn(res: ApmRepoVersionReturn): {
     version: string;
@@ -69,7 +88,9 @@ export class ApmRepository {
   }
 
   /**
-   * Ensure dnp name ends under valid registries: dnp.dappnode.eth or public.dappnode.eth
+   * Ensures the DNP name ends under valid registries: dnp.dappnode.eth or public.dappnode.eth
+   * @param dnpName - The name of the DNP.
+   * @returns - The valid DNP name.
    */
   private ensureValidDnpName(dnpName: string): string {
     if (!dnpName.endsWith(".dappnode.eth"))

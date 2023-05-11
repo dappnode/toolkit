@@ -13,19 +13,22 @@ import {
   publicRegistryGraphEndpoint,
 } from "./params.js";
 
-// TODO:
-// - Clean code
-// - Review tests
-// - Add utils tests
-// - Document functions
-// - Consider adding scanning functions for events
+// TODO: Consider adding scanning functions for events
 
+/**
+ * DappNodeRegistry is a class to interact with the DAppNode Registry Contract.
+ */
 export class DappNodeRegistry {
-  contractAddress: string;
-  registry: RegistryType;
-  graphEndpoint: string;
-  registryContract: APMRegistry;
+  private contractAddress: string;
+  private registry: RegistryType;
+  private graphEndpoint: string;
+  private registryContract: APMRegistry;
 
+  /**
+   * Class constructor
+   * @param ethProvider - The ethers provider to interact with the Ethereum network.
+   * @param registry - The type of the registry (DNP or Public).
+   */
   constructor(ethProvider: ethers.providers.Provider, registry: RegistryType) {
     this.registry = registry;
     if (registry === RegistryType.dnp) {
@@ -43,35 +46,42 @@ export class DappNodeRegistry {
   }
 
   /**
-   * Returns the packages for a given registry: DNP or Public
-   * using graphQL
+   * Fetches the packages for the given registry using graphQL.
+   * @returns - A promise that resolves to an array of registry entries.
    */
   public async queryGraphNewRepos<T extends RegistryType>(): Promise<
     T extends RegistryType.dnp ? DNPRegistryEntry : PublicRegistryEntry
   > {
-    const query =
-      this.registry === RegistryType.dnp
-        ? gql`
-            query {
-              newRepos {
-                id
-                Registry_id
-                name
-                repo
-              }
-            }
-          `
-        : gql`
-            query {
-              newRepos {
-                id
-                RegistryPublic_id
-                name
-                repo
-              }
-            }
-          `;
-
+    const query = this.constructGraphQLQuery();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ((await request(this.graphEndpoint, query)) as any).newRepos;
+  }
+
+  /**
+   * Constructs the GraphQL query based on the type of the registry.
+   * @returns - The GraphQL query string.
+   */
+  private constructGraphQLQuery(): string {
+    return this.registry === RegistryType.dnp
+      ? gql`
+          query {
+            newRepos {
+              id
+              Registry_id
+              name
+              repo
+            }
+          }
+        `
+      : gql`
+          query {
+            newRepos {
+              id
+              RegistryPublic_id
+              name
+              repo
+            }
+          }
+        `;
   }
 }

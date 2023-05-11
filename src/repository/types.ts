@@ -26,12 +26,6 @@ export type NodeArch =
 
 export type IPFSEntryName = Pick<IPFSEntry, "name">;
 
-export interface IpfsDagGetDirectory {
-  Name: string;
-  Size: number;
-  Hash: string;
-}
-
 export enum IpfsClientTarget {
   api = "api",
   gateway = "gateway",

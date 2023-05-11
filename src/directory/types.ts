@@ -15,8 +15,7 @@ import { Manifest } from "@dappnode/types";
  *
  * [NOTE] Search result will never show up in the directory listing,
  * they will appear in a future dropdown under the searchbar
- */
-/**
+ *
  * Information immediatelly available in the directory smart contract
  */
 
