@@ -26,11 +26,6 @@ export type NodeArch =
 
 export type IPFSEntryName = Pick<IPFSEntry, "name">;
 
-export enum IpfsClientTarget {
-  api = "api",
-  gateway = "gateway",
-}
-
 /**
  * PKG release assets
  */
