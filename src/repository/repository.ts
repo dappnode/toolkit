@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import * as isIPFS from "is-ipfs";
 import {
-  IpfsClientTarget,
   PkgRelease,
   FileConfig,
   FileFormat,
@@ -30,47 +29,33 @@ import YAML from "yaml";
 import os from "os";
 import { ApmRepository } from "./apmRepository.js";
 
-/**
- * FOR IPFS API use standard endpoints: cat, ls, get, etc
- * FOR IPFS GATEWAY use dag endpoints
- */
-
 const source = "ipfs" as const;
 
 /**
  * The DappnodeRepository class extends ApmRepository class to provide methods to interact with the IPFS network.
+ * To fetch IPFS content it uses dag endpoint for CAR content validation
+ *
+ * @extends ApmRepository
  */
 export class DappnodeRepository extends ApmRepository {
   protected ipfs: IPFSHTTPClient;
-  protected ipfsClientTarget: IpfsClientTarget;
 
   /**
    * Constructs an instance of DappnodeRepository
    * @param ipfsUrl - The URL of the IPFS network node.
-   * @param ipfsClientTarget - The target type of the IPFS client.
    * @param ethProvider - Ethereum network provider.
    */
-  constructor(
-    ipfsUrl: string,
-    ipfsClientTarget: IpfsClientTarget,
-    ethProvider: ethers.providers.Provider
-  ) {
+  constructor(ipfsUrl: string, ethProvider: ethers.providers.Provider) {
     super(ethProvider);
     this.ipfs = create({ url: ipfsUrl, timeout: 30 * 1000 });
-    this.ipfsClientTarget = ipfsClientTarget;
   }
 
   /**
    * Changes the IPFS provider and target.
    * @param ipfsUrl - The new URL of the IPFS network node.
-   * @param ipfsClientTarget - The new target type of the IPFS client.
    */
-  public changeIpfsProviderAndTarget(
-    ipfsUrl: string,
-    ipfsClientTarget: IpfsClientTarget
-  ): void {
+  public changeIpfsProvider(ipfsUrl: string): void {
     this.ipfs = create({ url: ipfsUrl, timeout: 30 * 1000 });
-    this.ipfsClientTarget = ipfsClientTarget;
   }
 
   /**
@@ -110,6 +95,7 @@ export class DappnodeRepository extends ApmRepository {
     _version?: string;
     _os?: NodeArch;
   }): Promise<PkgRelease> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { version, contentUri } = await this.getVersionAndIpfsHash({
       dnpName,
       version: _version,
@@ -220,18 +206,9 @@ export class DappnodeRepository extends ApmRepository {
     maxLength?: number
   ): Promise<string> {
     const chunks = [];
-    if (this.ipfsClientTarget === IpfsClientTarget.api) {
-      for await (const chunk of this.ipfs.cat(hash, {
-        length: maxLength,
-      }))
-        chunks.push(chunk);
-    } else {
-      const { carReader, root } = await this.getAndVerifyContentFromGateway(
-        hash
-      );
-      const content = await this.unpackCarReader(carReader, root);
-      for await (const chunk of content) chunks.push(chunk);
-    }
+    const { carReader, root } = await this.getAndVerifyContentFromGateway(hash);
+    const content = await this.unpackCarReader(carReader, root);
+    for await (const chunk of content) chunks.push(chunk);
 
     const buffer = Buffer.concat(chunks);
     if (maxLength && buffer.length >= maxLength)
@@ -267,15 +244,8 @@ export class DappnodeRepository extends ApmRepository {
     fileSize?: number;
     progress?: (n: number) => void;
   }): Promise<void> {
-    let readable: AsyncIterable<Uint8Array>;
-    if (this.ipfsClientTarget === IpfsClientTarget.api)
-      readable = this.ipfs.cat(hash, { timeout, length: fileSize });
-    else {
-      const { carReader, root } = await this.getAndVerifyContentFromGateway(
-        hash
-      );
-      readable = await this.unpackCarReader(carReader, root);
-    }
+    const { carReader, root } = await this.getAndVerifyContentFromGateway(hash);
+    const readable = await this.unpackCarReader(carReader, root);
 
     return new Promise((resolve, reject) => {
       async function handleDownload(): Promise<void> {
@@ -340,9 +310,7 @@ export class DappnodeRepository extends ApmRepository {
 
   /**
    * Lists the contents of a directory pointed by the given hash.
-   * The method used depends on the IPFS client target:
-   * - Local: ipfs.ls => returns `size`!
-   * - Remote: ipfs.dag.get => reutrns `Tsize`!
+   * ipfs.dag.get => reutrns `Tsize`!
    *
    * TODO: research why the size is different, i.e for the hash QmWcJrobqhHF7GWpqEbxdv2cWCCXbACmq85Hh7aJ1eu8rn Tsize is 64461521 and size is 64446140
    *
@@ -353,23 +321,20 @@ export class DappnodeRepository extends ApmRepository {
 
   private async list(hash: string): Promise<IPFSEntry[]> {
     const files: IPFSEntry[] = [];
-    if (this.ipfsClientTarget === IpfsClientTarget.api)
-      for await (const file of this.ipfs.ls(hash)) files.push(file);
-    else {
-      const dagGet = await this.ipfs.dag.get(
-        CID.parse(this.sanitizeIpfsPath(hash))
-      );
-      if (dagGet.value.Links)
-        for (const link of dagGet.value.Links)
-          files.push({
-            type: "file",
-            cid: CID.parse(this.sanitizeIpfsPath(link.Hash.toString())),
-            name: link.Name,
-            path: path.join(link.Hash.toString(), link.Name),
-            size: link.Tsize,
-          });
-      else throw Error(`Invalid IPFS hash ${hash}`);
-    }
+    const dagGet = await this.ipfs.dag.get(
+      CID.parse(this.sanitizeIpfsPath(hash))
+    );
+    if (dagGet.value.Links)
+      for (const link of dagGet.value.Links)
+        files.push({
+          type: "file",
+          cid: CID.parse(this.sanitizeIpfsPath(link.Hash.toString())),
+          name: link.Name,
+          path: path.join(link.Hash.toString(), link.Name),
+          size: link.Tsize,
+        });
+    else throw Error(`Invalid IPFS hash ${hash}`);
+
     return files;
   }
 

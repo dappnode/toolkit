@@ -1,31 +1,22 @@
 import { ethers } from "ethers";
 import { expect } from "chai";
-import {
-  DappnodeRepository,
-  IpfsClientTarget,
-} from "../../src/repository/index.js";
+import { DappnodeRepository } from "../../src/repository/index.js";
 import { cleanTestDir, testDir } from "../testUtils.js";
 import path from "path";
 import fs from "fs";
 import { createHash } from "crypto";
 
 describe("Dappnode Repository", function () {
-  const ipfsProviders = [
-    {
-      ipfsUrl: "https://api.ipfs.dappnode.io",
-      ipfsClientTarget: IpfsClientTarget.api,
-    },
-    {
-      ipfsUrl: "https://gateway.ipfs.dappnode.io",
-      ipfsClientTarget: IpfsClientTarget.gateway,
-    },
+  const ipfsUrls = [
+    "https://api.ipfs.dappnode.io",
+    "https://gateway.ipfs.dappnode.io",
   ];
 
   before(() => {
     cleanTestDir();
   });
 
-  for (const { ipfsUrl, ipfsClientTarget } of ipfsProviders) {
+  for (const ipfsUrl of ipfsUrls) {
     this.timeout(100000);
     const ethProvider = new ethers.providers.InfuraProvider(
       "mainnet",
@@ -34,13 +25,9 @@ describe("Dappnode Repository", function () {
 
     const prysmDnpName = "prysm.dnp.dappnode.eth";
     const prysmVersion = "3.0.8";
-    const contract = new DappnodeRepository(
-      ipfsUrl,
-      ipfsClientTarget,
-      ethProvider
-    );
+    const contract = new DappnodeRepository(ipfsUrl, ethProvider);
 
-    it(`[${ipfsClientTarget}] Should get and validate package version for Prysm:${prysmVersion}`, async () => {
+    it(`[${ipfsUrl}] Should get and validate package version for Prysm:${prysmVersion}`, async () => {
       const expectedVersionAndIpfsHash = {
         version: "3.0.8",
         contentUri: "/ipfs/QmZrZeQwMBBfSb6FQUcKdnB9epGmUzqarmkw2RbwTVQgbZ",
@@ -52,15 +39,15 @@ describe("Dappnode Repository", function () {
       expect(result).to.deep.equal(expectedVersionAndIpfsHash);
     });
 
-    it(`[${ipfsClientTarget}] Should get and validate package release for Prysm:${prysmVersion}`, async () => {
+    it(`[${ipfsUrl}] Should get and validate package release for Prysm:${prysmVersion}`, async () => {
       const expectedImageFile = {
         hash: "QmWcJrobqhHF7GWpqEbxdv2cWCCXbACmq85Hh7aJ1eu8rn",
-        size: ipfsClientTarget === IpfsClientTarget.api ? 64446140 : 64461521,
+        size: 64461521,
         source: "ipfs",
       };
       const expectedAvatarFile = {
         hash: "QmeZBTEAf3bXJreBECaMhHa53bhCPqvSwVng8q1UnPoL4L",
-        size: ipfsClientTarget === IpfsClientTarget.api ? 4292 : 4303,
+        size: 4303,
         source: "ipfs",
       };
       const expectedManifest = {
@@ -173,7 +160,7 @@ describe("Dappnode Repository", function () {
       expect(pkgRelease.avatarFile).to.deep.equal(expectedAvatarFile);
     });
 
-    it(`[${ipfsClientTarget}] Should get multiple pkgs releases: `, async () => {
+    it(`[${ipfsUrl}] Should get multiple pkgs releases: `, async () => {
       const pkgReleases = await contract.getPkgsReleases(
         {
           [prysmDnpName]: prysmVersion,
@@ -186,13 +173,13 @@ describe("Dappnode Repository", function () {
       expect(pkgReleases).to.be.ok;
     });
 
-    it(`[${ipfsClientTarget}] Should write avatar file to filesystem and verify its hash`, async () => {
+    it(`[${ipfsUrl}] Should write avatar file to filesystem and verify its hash`, async () => {
       const expectedHash =
         "c69e3bdc66446d32c1ed91f3d2e5a4e56ccde571668c85e15a23ef3613c31cb8";
       const avatarFileName = "avatar.png";
       const avatarFileExample = {
         hash: "QmeZBTEAf3bXJreBECaMhHa53bhCPqvSwVng8q1UnPoL4L",
-        size: ipfsClientTarget === IpfsClientTarget.api ? 4292 : 4303,
+        size: 4303,
         source: "ipfs",
       };
 
@@ -207,14 +194,14 @@ describe("Dappnode Repository", function () {
       expect(hash).to.equal(expectedHash);
     });
 
-    it(`[${ipfsClientTarget}] Should write docker image file to filesystem and verify its hash`, async () => {
+    it(`[${ipfsUrl}] Should write docker image file to filesystem and verify its hash`, async () => {
       const expectedHash =
         "1f838c82a415bf82fa98171206f25827dd4cb93234bbf24b58969cd6ef2df159";
       const dockerImageFileName =
         "prysm.dnp.dappnode.eth_3.0.8_linux-amd64.txz";
       const dockerImageFileExample = {
         hash: "QmWcJrobqhHF7GWpqEbxdv2cWCCXbACmq85Hh7aJ1eu8rn",
-        size: ipfsClientTarget === IpfsClientTarget.api ? 64446140 : 64461521,
+        size: 64461521,
         source: "ipfs",
       };
 
