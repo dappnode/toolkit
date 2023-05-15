@@ -12,7 +12,7 @@ import { CarReader } from "@ipld/car";
 import { recursive as exporter } from "ipfs-unixfs-exporter";
 import { IPFSEntry } from "ipfs-core-types/src/root.js";
 import { Version } from "multiformats";
-import path, { isAbsolute } from "path";
+import path from "path";
 import fs from "fs";
 import stream from "stream";
 import util from "util";
@@ -26,7 +26,6 @@ import {
   releaseFilesToDownload,
 } from "@dappnode/types";
 import YAML from "yaml";
-import os from "os";
 import { ApmRepository } from "./apmRepository.js";
 
 const source = "ipfs" as const;
@@ -67,15 +66,15 @@ export class DappnodeRepository extends ApmRepository {
     packages: {
       [name: string]: string;
     },
-    os?: NodeArch
+    os: NodeArch
   ): Promise<PkgRelease[]> {
     return await Promise.all(
       Object.entries(packages).map(
         async ([name, version]) =>
           await this.getPkgRelease({
             dnpName: name,
-            _version: version,
-            _os: os,
+            os,
+            version,
           })
       )
     );
@@ -88,17 +87,16 @@ export class DappnodeRepository extends ApmRepository {
    */
   public async getPkgRelease({
     dnpName,
-    _version,
-    _os,
+    os,
+    version,
   }: {
     dnpName: string;
-    _version?: string;
-    _os?: NodeArch;
+    os: NodeArch;
+    version?: string;
   }): Promise<PkgRelease> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { version, contentUri } = await this.getVersionAndIpfsHash({
+    const { contentUri } = await this.getVersionAndIpfsHash({
       dnpName,
-      version: _version,
+      version,
     });
     if (!isIPFS.cid(this.sanitizeIpfsPath(contentUri)))
       throw Error(`Invalid IPFS hash ${contentUri}`);
@@ -117,11 +115,7 @@ export class DappnodeRepository extends ApmRepository {
     );
     const avatar = this.getAssetIpfsEntry(ipfsEntries, releaseFiles.avatar);
     return {
-      imageFile: this.getImageByArch(
-        manifest,
-        ipfsEntries,
-        _os || (os.arch() as NodeArch)
-      ),
+      imageFile: this.getImageByArch(manifest, ipfsEntries, os),
       avatarFile: avatar
         ? { hash: avatar.cid.toString(), size: avatar.size, source }
         : undefined,
@@ -222,6 +216,8 @@ export class DappnodeRepository extends ApmRepository {
    * Downloads the content pointed by the given hash and writes it directly to the filesystem.
    * This function is intended for large files, such as Docker images.
    *
+   * IMPORTANT: This function is not supported in the browser.
+   *
    * @param args - The arguments object.
    * @param args.hash - The content identifier (CID) of the file to download.
    * @param args.path - The path where the file will be written.
@@ -233,7 +229,7 @@ export class DappnodeRepository extends ApmRepository {
    */
   public async writeFileToFs({
     hash,
-    path,
+    path: _path,
     timeout,
     fileSize,
     progress,
@@ -249,7 +245,7 @@ export class DappnodeRepository extends ApmRepository {
 
     return new Promise((resolve, reject) => {
       async function handleDownload(): Promise<void> {
-        if (!path || path.startsWith("/ipfs/") || !isAbsolute("/"))
+        if (!_path || _path.startsWith("/ipfs/") || !path.isAbsolute("/"))
           reject(Error(`Invalid path: "${path}"`));
 
         const asyncIterableArray: Uint8Array[] = [];
@@ -293,7 +289,7 @@ export class DappnodeRepository extends ApmRepository {
         try {
           for await (const chunk of readable) onData(chunk);
 
-          const writable = fs.createWriteStream(path);
+          const writable = fs.createWriteStream(_path);
           await util.promisify(stream.pipeline)(
             stream.Readable.from(asyncIterableArray),
             writable
@@ -330,7 +326,7 @@ export class DappnodeRepository extends ApmRepository {
           type: "file",
           cid: CID.parse(this.sanitizeIpfsPath(link.Hash.toString())),
           name: link.Name,
-          path: path.join(link.Hash.toString(), link.Name),
+          path: `${link.Hash.toString()}/${link.Name}`, // Do not use module path to be browser compatible. path.join(link.Hash.toString(), link.Name),
           size: link.Tsize,
         });
     else throw Error(`Invalid IPFS hash ${hash}`);
