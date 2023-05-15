@@ -713,7 +713,7 @@ describe("Dappnode Registry", function () {
         repo: "0x1ad9ee2b2ead2b401a1145807946fe6472aa63c1",
       },
     ];
-    const ethProvider = new ethers.providers.InfuraProvider(
+    const ethProvider = new ethers.InfuraProvider(
       "mainnet",
       process.env.INFURA_MAINNET_KEY
     );
@@ -1243,7 +1243,7 @@ describe("Dappnode Registry", function () {
         repo: "0x81f40a88afdd522dc1e3ff4e41dd062d00f38ac6",
       },
     ];
-    const ethProvider = new ethers.providers.InfuraProvider(
+    const ethProvider = new ethers.InfuraProvider(
       "mainnet",
       process.env.INFURA_MAINNET_KEY
     );

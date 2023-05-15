@@ -44,7 +44,7 @@ export class DappnodeRepository extends ApmRepository {
    * @param ipfsUrl - The URL of the IPFS network node.
    * @param ethProvider - Ethereum network provider.
    */
-  constructor(ipfsUrl: string, ethProvider: ethers.providers.Provider) {
+  constructor(ipfsUrl: string, ethProvider: ethers.Provider) {
     super(ethProvider);
     this.ipfs = create({ url: ipfsUrl, timeout: 30 * 1000 });
   }

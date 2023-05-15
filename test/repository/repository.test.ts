@@ -18,7 +18,7 @@ describe("Dappnode Repository", function () {
 
   for (const ipfsUrl of ipfsUrls) {
     this.timeout(100000);
-    const ethProvider = new ethers.providers.InfuraProvider(
+    const ethProvider = new ethers.InfuraProvider(
       "mainnet",
       "e6c920580178424bbdf6dde266bfb5bd"
     );

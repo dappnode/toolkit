@@ -16,7 +16,7 @@ export class DappNodeDirectory {
    * Class constructor
    * @param ethProvider - The ethers provider to interact with the Ethereum network.
    */
-  constructor(ethProvider: ethers.providers.Provider) {
+  constructor(ethProvider: ethers.Provider) {
     this.directoryContract = DAppNodePackageDirectory__factory.connect(
       directoryAddress,
       ethProvider
@@ -44,7 +44,9 @@ export class DappNodeDirectory {
    * @returns - A promise that resolves to the number of Dappnode packages.
    */
   private async fetchNumberOfPackages(): Promise<number> {
-    return (await this.directoryContract.numberOfDAppNodePackages()).toNumber();
+    return parseInt(
+      (await this.directoryContract.numberOfDAppNodePackages()).toString()
+    );
   }
 
   /**
@@ -103,7 +105,7 @@ export class DappNodeDirectory {
         status: statusBn,
         position: positionBn,
       } = await this.directoryContract.getPackage(index);
-      const status = statusBn.toNumber();
+      const status = parseInt(statusBn.toString());
 
       if (!this.isEnsDomain(name) || status === 0) return;
 
@@ -111,7 +113,7 @@ export class DappNodeDirectory {
       return {
         name,
         statusName: directoryDnpStatus[status],
-        position: positionBn.toNumber(),
+        position: parseInt(positionBn.toString()),
         isFeatured: featuredIndex > -1,
         featuredIndex: featuredIndex,
       };
