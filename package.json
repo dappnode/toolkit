@@ -20,7 +20,10 @@
     "truffle:migrate:v0.4": "truffle migrate --config ./truffle/truffle-config-v0.4.cjs --reset --network development",
     "truffle:migrate:v0.5": "truffle migrate --config ./truffle/truffle-config-v0.5.cjs --reset --network development"
   },
-  "author": "",
+  "author": "DAppNode Association <admin@dappnode.io> (https://github.com/dappnode)",
+  "contributors": [
+    "Pablo Mendez <mendez4a@gmail.com> (https://github.com/pablomendezroyo)"
+  ],
   "license": "ISC",
   "devDependencies": {
     "@typechain/ethers-v6": "^0.3.2",
