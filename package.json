@@ -10,7 +10,6 @@
     "build": "npm run clean && npm run truffle:compile:v0.4 && npm run truffle:compile:v0.5 && npm run typechain && tsc",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "get": "typechain --help",
     "typechain": "typechain --target ethers-v6 --out-dir ./src/typechain './truffle/contracts_build/contracts*/*.json'",
     "test": "mocha --config .mocharc.yml test/**/*.test.ts",
     "truffle:compile:v0.4": "truffle compile --config ./truffle/truffle-config-v0.4.cjs",
