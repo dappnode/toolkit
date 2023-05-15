@@ -7,7 +7,7 @@
   "scripts": {
     "tag-and-publish": "npm version patch && git push --follow-tags",
     "clean": "rimraf dist",
-    "build": "npm run clean && npm run truffle:compile:v0.4 && npm run truffle:compile:v0.5 && npm run typechain && tsc",
+    "build": "npm run clean && npm run truffle:compile:v0.4 && npm run truffle:compile:v0.5 && npm run typechain && node addExtensionJs.js && tsc",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "typechain": "typechain --target ethers-v6 --out-dir ./src/typechain './truffle/contracts_build/contracts*/*.json'",
