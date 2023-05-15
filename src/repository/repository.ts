@@ -66,7 +66,7 @@ export class DappnodeRepository extends ApmRepository {
     packages: {
       [name: string]: string;
     },
-    os: NodeArch
+    os?: NodeArch
   ): Promise<PkgRelease[]> {
     return await Promise.all(
       Object.entries(packages).map(
@@ -87,11 +87,11 @@ export class DappnodeRepository extends ApmRepository {
    */
   public async getPkgRelease({
     dnpName,
-    os,
+    os = "x64",
     version,
   }: {
     dnpName: string;
-    os: NodeArch;
+    os?: NodeArch;
     version?: string;
   }): Promise<PkgRelease> {
     const { contentUri } = await this.getVersionAndIpfsHash({
