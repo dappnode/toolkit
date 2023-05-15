@@ -29,7 +29,7 @@ export class DappNodeRegistry {
    * @param ethProvider - The ethers provider to interact with the Ethereum network.
    * @param registry - The type of the registry (DNP or Public).
    */
-  constructor(ethProvider: ethers.providers.Provider, registry: RegistryType) {
+  constructor(ethProvider: ethers.Provider, registry: RegistryType) {
     this.registry = registry;
     if (registry === RegistryType.dnp) {
       this.contractAddress = registryDnpAddress;

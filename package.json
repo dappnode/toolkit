@@ -10,7 +10,8 @@
     "build": "npm run clean && npm run truffle:compile:v0.4 && npm run truffle:compile:v0.5 && npm run typechain && tsc",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "typechain": "typechain --target ethers-v5 --out-dir ./src/typechain './truffle/contracts_build/contracts*/*.json'",
+    "get": "typechain --help",
+    "typechain": "typechain --target ethers-v6 --out-dir ./src/typechain './truffle/contracts_build/contracts*/*.json'",
     "test": "mocha --config .mocharc.yml test/**/*.test.ts",
     "truffle:compile:v0.4": "truffle compile --config ./truffle/truffle-config-v0.4.cjs",
     "truffle:compile:v0.5": "truffle compile --config ./truffle/truffle-config-v0.5.cjs",
@@ -20,15 +21,10 @@
     "truffle:migrate:v0.4": "truffle migrate --config ./truffle/truffle-config-v0.4.cjs --reset --network development",
     "truffle:migrate:v0.5": "truffle migrate --config ./truffle/truffle-config-v0.5.cjs --reset --network development"
   },
-  "typechain": {
-    "outDir": "./src/typechain",
-    "target": "truffle-v5"
-  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@typechain/ethers-v5": "^10.2.0",
-    "@typechain/truffle-v5": "^8.0.2",
+    "@typechain/ethers-v6": "^0.3.2",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.1.1",
@@ -41,6 +37,7 @@
     "mocha": "^10.2.0",
     "prettier": "^2.8.7",
     "rimraf": "^5.0.0",
+    "truffle": "^5.9.0",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
@@ -51,7 +48,7 @@
     "@dappnode/types": "^0.1.12",
     "@ipld/car": "^5.1.1",
     "esm": "^3.2.25",
-    "ethers": "^5.7.2",
+    "ethers": "^6.3.0",
     "graphql-request": "^6.0.0",
     "ipfs-http-client": "^60.0.0",
     "ipfs-unixfs-exporter": "^13.1.5",

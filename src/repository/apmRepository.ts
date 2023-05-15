@@ -7,13 +7,13 @@ import { ApmRepoVersionReturn, ApmVersionRaw } from "./types.js";
  * ApmRepository is a class to interact with the DAppNode APM Repository Contract.
  */
 export class ApmRepository {
-  private ethProvider: ethers.providers.Provider;
+  private ethProvider: ethers.Provider;
 
   /**
    * Class constructor
    * @param ethProvider - The ethers provider to interact with the Ethereum network.
    */
-  constructor(ethProvider: ethers.providers.Provider) {
+  constructor(ethProvider: ethers.Provider) {
     this.ethProvider = ethProvider;
   }
 
@@ -54,7 +54,11 @@ export class ApmRepository {
           )
         : await repoContract.getLatest();
 
-    return this.parseApmVersionReturn(res);
+    return this.parseApmVersionReturn({
+      semanticVersion: res[0].map((v) => parseInt(v.toString())),
+      contractAddress: res[1],
+      contentURI: res[2],
+    });
   }
 
   /**
@@ -83,7 +87,7 @@ export class ApmRepository {
       version: res.semanticVersion.join("."),
       // Second argument = true: ignore UTF8 parsing errors
       // Let downstream code identify the content hash as wrong
-      contentUri: ethers.utils.toUtf8String(res.contentURI),
+      contentUri: ethers.toUtf8String(res.contentURI),
     };
   }
 

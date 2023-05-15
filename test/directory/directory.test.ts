@@ -4,7 +4,7 @@ import { expect } from "chai";
 
 describe("Dappnode Directory", function () {
   this.timeout(100000);
-  const ethProvider = new ethers.providers.InfuraProvider(
+  const ethProvider = new ethers.InfuraProvider(
     "mainnet",
     process.env.INFURA_MAINNET_KEY
   );
