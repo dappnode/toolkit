@@ -4,7 +4,7 @@ import {
   Manifest,
   PrometheusTarget,
 } from "@dappnode/types";
-import { IPFSEntry } from "ipfs-core-types/src/root.js";
+import { CID } from "ipfs-http-client";
 
 /**
  * IPFS
@@ -24,7 +24,18 @@ export type NodeArch =
   | "x32"
   | "x64";
 
-export type IPFSEntryName = Pick<IPFSEntry, "name">;
+/**
+ * TODO: the interface IPFSEntry is not properly exported by library ipfs-core-types. If importing it directly then the compiler throws an error. Version: 0.14.0
+ */
+export interface IPFSEntry {
+  readonly type: "dir" | "file";
+  readonly cid: CID;
+  readonly name: string;
+  readonly path: string;
+  mode?: number;
+  mtime?: any;
+  size: number;
+}
 
 /**
  * PKG release assets

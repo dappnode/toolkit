@@ -6,11 +6,11 @@ import {
   FileFormat,
   NodeArch,
   DistributedFile,
+  IPFSEntry,
 } from "./types.js";
 import { CID, IPFSHTTPClient, create } from "ipfs-http-client";
 import { CarReader } from "@ipld/car";
 import { recursive as exporter } from "ipfs-unixfs-exporter";
-import { IPFSEntry } from "ipfs-core-types/src/root.js";
 import { Version } from "multiformats";
 import path from "path";
 import fs from "fs";
