@@ -204,12 +204,23 @@ export class DappnodeRepository extends ApmRepository {
     const content = await this.unpackCarReader(carReader, root);
     for await (const chunk of content) chunks.push(chunk);
 
-    const buffer = Buffer.concat(chunks);
+    // Concatenate the chunks into a single Uint8Array
+    let totalLength = 0;
+    chunks.forEach((chunk) => (totalLength += chunk.length));
+    const buffer = new Uint8Array(totalLength);
+    let offset = 0;
+    chunks.forEach((chunk) => {
+      buffer.set(chunk, offset);
+      offset += chunk.length;
+    });
+
     if (maxLength && buffer.length >= maxLength)
       throw Error(`Maximum size ${maxLength} bytes exceeded`);
 
-    // TODO: the data encoding may be different from utf8, depending on the file type, we should detect it automatically. Consider using carHeader
-    return buffer.toString("utf8");
+    // Convert the Uint8Array to a string
+    // TODO: This assumes the data is UTF-8 encoded. If it's not, you will need a more complex conversion. Research which encoding is used by IPFS.
+    const decoder = new TextDecoder("utf-8");
+    return decoder.decode(buffer);
   }
 
   /**
