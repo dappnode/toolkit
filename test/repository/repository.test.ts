@@ -151,8 +151,8 @@ describe("Dappnode Repository", function () {
 
       const pkgRelease = await contract.getPkgRelease({
         dnpName: prysmDnpName,
-        _version: prysmVersion,
-        _os: "x64",
+        version: prysmVersion,
+        os: "x64",
       });
       expect(pkgRelease.manifest).to.deep.equal(expectedManifest);
       expect(pkgRelease.compose).to.deep.equal(expectedCompose);
