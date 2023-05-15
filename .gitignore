@@ -2,3 +2,5 @@ node_modules
 dist
 theGraph/*/node_modules
 test/test_files
+src/typechain
+truffle/contracts_build
