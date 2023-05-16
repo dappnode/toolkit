@@ -328,7 +328,7 @@ export class DappnodeRepository extends ApmRepository {
    * @throws Error when the provided hash is invalid.
    */
 
-  private async list(hash: string): Promise<IPFSEntry[]> {
+  public async list(hash: string): Promise<IPFSEntry[]> {
     const files: IPFSEntry[] = [];
     const dagGet = await this.ipfs.dag.get(
       CID.parse(this.sanitizeIpfsPath(hash)),
