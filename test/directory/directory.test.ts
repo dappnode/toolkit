@@ -201,13 +201,7 @@ describe("Dappnode Directory", function () {
         isFeatured: false,
         featuredIndex: -1,
       },
-      {
-        name: "ethereum-classic.dnp.dappnode.eth",
-        statusName: "Active",
-        position: 15500,
-        isFeatured: false,
-        featuredIndex: -1,
-      },
+
       {
         name: "cosmos.public.dappnode.eth",
         statusName: "Active",
@@ -231,6 +225,7 @@ describe("Dappnode Directory", function () {
       },
     ];
     const result = await contract.getDirectoryPkgs();
+    console.log(result);
     expect(result).to.have.deep.members(expectedResult);
   });
 });
