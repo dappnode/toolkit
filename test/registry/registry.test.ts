@@ -4,13 +4,13 @@ import {
   DNPRegistryEntry,
   PublicRegistryEntry,
   DappNodeRegistry,
-  RegistryType,
+  Registry,
 } from "../../src/registry/index.js";
 
 describe("Dappnode Registry", function () {
   this.timeout(100000);
 
-  it(`should get ${RegistryType.dnp} newRepos`, async () => {
+  it(`should get dnp newRepos`, async () => {
     const expectedResult: DNPRegistryEntry[] = [
       {
         id: "0x014a26511e1a8896e6b60002f82de526ee2e3452e5a170b74bc97c01fc4864f9f8000000",
@@ -717,12 +717,12 @@ describe("Dappnode Registry", function () {
       "mainnet",
       process.env.INFURA_MAINNET_KEY
     );
-    const contract = new DappNodeRegistry(ethProvider, RegistryType.dnp);
-    const result = await contract.queryGraphNewRepos<RegistryType.dnp>();
+    const contract = new DappNodeRegistry(ethProvider, "dnp");
+    const result = await contract.queryGraphNewRepos<"dnp">();
     expect(result).to.have.deep.members(expectedResult);
   });
 
-  it(`should get ${RegistryType.public} newRepos`, async () => {
+  it(`should get public newRepos`, async () => {
     const expectedResult: PublicRegistryEntry[] = [
       {
         id: "0x0060cb7c75f6bf1709541b92a8c7482f2c2ba62e62dfed90bcbdfb763465c5277b000000",
@@ -1247,9 +1247,9 @@ describe("Dappnode Registry", function () {
       "mainnet",
       process.env.INFURA_MAINNET_KEY
     );
-    const contract = new DappNodeRegistry(ethProvider, RegistryType.public);
+    const contract = new DappNodeRegistry(ethProvider, "public");
 
-    const result = await contract.queryGraphNewRepos<RegistryType.public>();
+    const result = await contract.queryGraphNewRepos<"public">();
     expect(result).to.have.deep.members(expectedResult);
   });
 });

@@ -1,7 +1,4 @@
-export const enum RegistryType {
-  dnp = "dnp.dappnode.eth",
-  public = "public.dappnode.eth",
-}
+export type Registry = "dnp" | "public";
 
 interface RegistryEntry {
   id: string;

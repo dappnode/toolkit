@@ -1,10 +1,6 @@
 import { ethers } from "ethers";
 import { APMRegistry, APMRegistry__factory } from "../typechain/index.js";
-import {
-  DNPRegistryEntry,
-  PublicRegistryEntry,
-  RegistryType,
-} from "./types.js";
+import { DNPRegistryEntry, PublicRegistryEntry, Registry } from "./types.js";
 import { request, gql } from "graphql-request";
 import {
   registryDnpAddress,
@@ -20,7 +16,7 @@ import {
  */
 export class DappNodeRegistry {
   private contractAddress: string;
-  private registry: RegistryType;
+  private registry: Registry;
   private graphEndpoint: string;
   private registryContract: APMRegistry;
 
@@ -29,9 +25,9 @@ export class DappNodeRegistry {
    * @param ethProvider - The ethers provider to interact with the Ethereum network.
    * @param registry - The type of the registry (DNP or Public).
    */
-  constructor(ethProvider: ethers.Provider, registry: RegistryType) {
+  constructor(ethProvider: ethers.Provider, registry: Registry) {
     this.registry = registry;
-    if (registry === RegistryType.dnp) {
+    if (registry === "dnp") {
       this.contractAddress = registryDnpAddress;
       this.graphEndpoint = dnpRegistryGraphEndpoint;
     } else {
@@ -49,8 +45,8 @@ export class DappNodeRegistry {
    * Fetches the packages for the given registry using graphQL.
    * @returns - A promise that resolves to an array of registry entries.
    */
-  public async queryGraphNewRepos<T extends RegistryType>(): Promise<
-    T extends RegistryType.dnp ? DNPRegistryEntry : PublicRegistryEntry
+  public async queryGraphNewRepos<T extends Registry>(): Promise<
+    T extends "dnp" ? DNPRegistryEntry : PublicRegistryEntry
   > {
     const query = this.constructGraphQLQuery();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,7 +58,7 @@ export class DappNodeRegistry {
    * @returns - The GraphQL query string.
    */
   private constructGraphQLQuery(): string {
-    return this.registry === RegistryType.dnp
+    return this.registry === "dnp"
       ? gql`
           query {
             newRepos {
