@@ -38,15 +38,17 @@ const source = "ipfs" as const;
  */
 export class DappnodeRepository extends ApmRepository {
   protected ipfs: IPFSHTTPClient;
+  protected timeout: number;
 
   /**
    * Constructs an instance of DappnodeRepository
    * @param ipfsUrl - The URL of the IPFS network node.
    * @param ethProvider - Ethereum network provider.
    */
-  constructor(ipfsUrl: string, ethProvider: ethers.Provider) {
+  constructor(ipfsUrl: string, ethProvider: ethers.Provider, timeout?: number) {
     super(ethProvider);
-    this.ipfs = create({ url: ipfsUrl, timeout: 30 * 1000 });
+    this.timeout = timeout || 30 * 1000;
+    this.ipfs = create({ url: ipfsUrl, timeout: this.timeout });
   }
 
   /**
@@ -329,7 +331,8 @@ export class DappnodeRepository extends ApmRepository {
   private async list(hash: string): Promise<IPFSEntry[]> {
     const files: IPFSEntry[] = [];
     const dagGet = await this.ipfs.dag.get(
-      CID.parse(this.sanitizeIpfsPath(hash))
+      CID.parse(this.sanitizeIpfsPath(hash)),
+      { timeout: this.timeout }
     );
     if (dagGet.value.Links)
       for (const link of dagGet.value.Links)
@@ -358,7 +361,7 @@ export class DappnodeRepository extends ApmRepository {
     root: CID<unknown, number, number, Version>;
   }> {
     const cid = CID.parse(this.sanitizeIpfsPath(hash));
-    const asynciterable = this.ipfs.dag.export(cid);
+    const asynciterable = this.ipfs.dag.export(cid, { timeout: this.timeout });
     const carReader = await CarReader.fromIterable(asynciterable);
     const roots = await carReader.getRoots();
     const root = roots[0];
