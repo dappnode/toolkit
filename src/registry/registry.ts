@@ -46,7 +46,7 @@ export class DappNodeRegistry {
    * @returns - A promise that resolves to an array of registry entries.
    */
   public async queryGraphNewRepos<T extends Registry>(): Promise<
-    T extends "dnp" ? DNPRegistryEntry : PublicRegistryEntry
+    T extends "dnp" ? DNPRegistryEntry[] : PublicRegistryEntry[]
   > {
     const query = this.constructGraphQLQuery();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
