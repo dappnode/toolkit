@@ -23,7 +23,7 @@ export const registryPublicAddress =
   "0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a";
 // dnp.dappnode.eth: 0x266bfdb2124a68beb6769dc887bd655f78778923
 export const registryDnpAddress = "0x266bfdb2124a68beb6769dc887bd655f78778923";
-export const abi: Abi = [
+export const registryAbi: Abi = [
   {
     constant: true,
     inputs: [],
