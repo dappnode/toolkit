@@ -1,3 +1,5 @@
+import { Abi } from "types.js";
+
 export const dnpRegistryGraphEndpoint =
   "https://api.studio.thegraph.com/query/45661/dappnode-registry/v0.0.3";
 export const publicRegistryGraphEndpoint =
@@ -21,7 +23,7 @@ export const registryPublicAddress =
   "0x9f85ae5aefe4a3eff39d9a44212aae21dd15079a";
 // dnp.dappnode.eth: 0x266bfdb2124a68beb6769dc887bd655f78778923
 export const registryDnpAddress = "0x266bfdb2124a68beb6769dc887bd655f78778923";
-export const abi = [
+export const registryAbi: Abi = [
   {
     constant: true,
     inputs: [],
