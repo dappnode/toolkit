@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { valid, parse } from "semver";
 import { Repo__factory, Repo } from "../typechain/index.js";
 import { ApmRepoVersionReturn, ApmVersionRaw } from "./types.js";
+import { ensureValidDnpName } from "../utils.js";
 
 /**
  * ApmRepository is a class to interact with the DAppNode APM Repository Contract.
@@ -27,7 +28,7 @@ export class ApmRepository {
    */
   public async getRepoContract(dnpName: string): Promise<Repo> {
     const contractAddress = await this.ethProvider.resolveName(
-      this.ensureValidDnpName(dnpName)
+      ensureValidDnpName(dnpName)
     );
     if (!contractAddress) throw new Error(`Could not resolve name ${dnpName}`);
     return Repo__factory.connect(contractAddress, this.ethProvider);
@@ -90,16 +91,5 @@ export class ApmRepository {
       // Let downstream code identify the content hash as wrong
       contentUri: ethers.toUtf8String(res.contentURI),
     };
-  }
-
-  /**
-   * Ensures the DNP name ends under valid registries: dnp.dappnode.eth or public.dappnode.eth
-   * @param dnpName - The name of the DNP.
-   * @returns - The valid DNP name.
-   */
-  private ensureValidDnpName(dnpName: string): string {
-    if (!dnpName.endsWith(".dappnode.eth"))
-      throw Error(`Invalid dnpName ${dnpName}`);
-    return dnpName;
   }
 }
