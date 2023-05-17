@@ -24,7 +24,7 @@ export class ApmRepository {
    * @param dnpName - The name of the DNP to resolve.
    * @returns - A promise that resolves to the Repo instance.
    */
-  private async getRepoContract(dnpName: string): Promise<Repo> {
+  public async getRepoContract(dnpName: string): Promise<Repo> {
     const contractAddress = await this.ethProvider.resolveName(
       this.ensureValidDnpName(dnpName)
     );
@@ -59,6 +59,22 @@ export class ApmRepository {
       contractAddress: res[1],
       contentURI: res[2],
     });
+  }
+
+   /**
+   * Get the registry contract for an ENS domain and the registry ABI.
+   * It will slice the first subdomain and query the rest as the registry domain.
+    * ENS domain:      admin.dnp.dappnode.eth
+    * Registry domain:       dnp.dappnode.eth
+   * @param ensName - The ENS domain name, e.g., "admin.dnp.dappnode.eth".
+   * @param registryAbi - The ABI of the registry contract in JSON format.
+   * @returns A contract instance of the registry for the specified ENS domain, or null if the registry address is not resolved.
+   */
+  public async getRegistryContract(ensName: string, registryAbi: string): Promise<ethers.Contract | null> {
+    const repoId = ensName.split(".").slice(1).join(".");
+    const registryAddress = await this.ethProvider.resolveName(repoId);
+    if (!registryAddress) return null;
+    return new ethers.Contract(registryAddress, registryAbi, this.ethProvider);
   }
 
   /**
