@@ -4,7 +4,6 @@ import {
   DNPRegistryEntry,
   PublicRegistryEntry,
   DappNodeRegistry,
-  Registry,
 } from "../../src/registry/index.js";
 
 describe("Dappnode Registry", function () {
@@ -412,6 +411,13 @@ describe("Dappnode Registry", function () {
         repo: "0x92e2ccebdcfd39413ce38dfd55c3674dca2c94b2",
       },
       {
+        id: "0x8d80d3ec2d00002422d7c48651bf50189a9e4c462b9c0315a56951b6ebbf7b62e0000000",
+        Registry_id:
+          "0xe20caadbce45ee027acf5f6aa1100615f42e8d8c4f30b9d7eb9db80ee77fb45a",
+        name: "prysm-sepolia",
+        repo: "0x121de6c76d42595cf1065016d1f355ff63251135",
+      },
+      {
         id: "0x8d94a4e25a3e698dd28ff8373237d1f2c3d2cec7ae1ef8bd2ae4a83a0be37c588a010000",
         Registry_id:
           "0xbe5f91cba72ebc57232e0cefc3f0130600a06cba329932e12ce92d59d69319e2",
@@ -705,13 +711,6 @@ describe("Dappnode Registry", function () {
         name: "nethermind-xdai",
         repo: "0x18da083461d863cc4d07cc7187093f18f2b8b860",
       },
-      {
-        id: "0xf5cd4b34096d6944fd6345964e58501c5f47757c34f9add232db6a517ffc05c9ba000000",
-        Registry_id:
-          "0x6718588580572f2e563bece77b34eda8a6014eefea308e3e759821abc86dda65",
-        name: "sepolia-geth",
-        repo: "0x1ad9ee2b2ead2b401a1145807946fe6472aa63c1",
-      },
     ];
     const ethProvider = new ethers.InfuraProvider(
       "mainnet",
@@ -968,6 +967,13 @@ describe("Dappnode Registry", function () {
           "0x3483406044a09734cd2b7e7a35c79c7c9c244a5c479cf1ef544c1bbfbefe2a7c",
         name: "bitcoin",
         repo: "0x077d271a3e4c3b45358417142490bd21172c81b5",
+      },
+      {
+        id: "0x7297c8346857c3127a2d58fa805afba27ec73d55936f06b1bae34ede61060f17a4000000",
+        RegistryPublic_id:
+          "0xd33c42438e7de747220fb6a3c6008dbbf80688a504e7d6c17595eea2fcfd290b",
+        name: "juno",
+        repo: "0xe01a9f110bc3e17288784664f8b8d96b23ac21ff",
       },
       {
         id: "0x73ed8b90d920b306fac52a3f5e2227a059409305f0e074e865fa75a4305732b00f000000",
