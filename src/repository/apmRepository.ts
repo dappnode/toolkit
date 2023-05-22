@@ -24,7 +24,7 @@ export class ApmRepository {
    * @param dnpName - The name of the DNP to resolve.
    * @returns - A promise that resolves to the Repo instance.
    */
-  private async getRepoContract(dnpName: string): Promise<Repo> {
+  public async getRepoContract(dnpName: string): Promise<Repo> {
     const contractAddress = await this.ethProvider.resolveName(
       this.ensureValidDnpName(dnpName)
     );
