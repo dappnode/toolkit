@@ -38,6 +38,8 @@ jobs:
 
       - name: Run tests
         run: npm run test
+        env:
+          INFURA_MAINNET_KEY: ${{ secrets.INFURA_MAINNET_KEY }}
 
       - name: Build TypeScript
         run: npm run build

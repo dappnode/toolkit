@@ -712,11 +712,10 @@ describe("Dappnode Registry", function () {
         repo: "0x18da083461d863cc4d07cc7187093f18f2b8b860",
       },
     ];
-    const ethProvider = new ethers.InfuraProvider(
-      "mainnet",
-      process.env.INFURA_MAINNET_KEY
+    const contract = new DappNodeRegistry(
+      `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_KEY}`,
+      "dnp"
     );
-    const contract = new DappNodeRegistry(ethProvider, "dnp");
     const result = await contract.queryGraphNewRepos<"dnp">();
     expect(result).to.have.deep.members(expectedResult);
   });
@@ -1249,11 +1248,11 @@ describe("Dappnode Registry", function () {
         repo: "0x81f40a88afdd522dc1e3ff4e41dd062d00f38ac6",
       },
     ];
-    const ethProvider = new ethers.InfuraProvider(
-      "mainnet",
-      process.env.INFURA_MAINNET_KEY
+
+    const contract = new DappNodeRegistry(
+      `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_KEY}`,
+      "public"
     );
-    const contract = new DappNodeRegistry(ethProvider, "public");
 
     const result = await contract.queryGraphNewRepos<"public">();
     expect(result).to.have.deep.members(expectedResult);

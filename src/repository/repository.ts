@@ -1,4 +1,3 @@
-import { ethers } from "ethers";
 import * as isIPFS from "is-ipfs";
 import {
   PkgRelease,
@@ -43,10 +42,10 @@ export class DappnodeRepository extends ApmRepository {
   /**
    * Constructs an instance of DappnodeRepository
    * @param ipfsUrl - The URL of the IPFS network node.
-   * @param ethProvider - Ethereum network provider.
+   * @param ethUrl - The URL of the Ethereum node to connect to.
    */
-  constructor(ipfsUrl: string, ethProvider: ethers.Provider, timeout?: number) {
-    super(ethProvider);
+  constructor(ipfsUrl: string, ethUrl: string, timeout?: number) {
+    super(ethUrl);
     this.timeout = timeout || 30 * 1000;
     this.ipfs = create({ url: ipfsUrl, timeout: this.timeout });
   }

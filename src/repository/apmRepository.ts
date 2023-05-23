@@ -11,10 +11,11 @@ export class ApmRepository {
 
   /**
    * Class constructor
-   * @param ethProvider - The ethers provider to interact with the Ethereum network.
+   * @param ethUrl - The URL of the Ethereum node to connect to.
    */
-  constructor(ethProvider: ethers.Provider) {
-    this.ethProvider = ethProvider;
+  constructor(ethUrl: string) {
+    if (!ethUrl) throw new Error("Ethereum URL is required");
+    this.ethProvider = new ethers.JsonRpcProvider(ethUrl, "mainnet");
   }
 
   /**
