@@ -4,11 +4,9 @@ import { expect } from "chai";
 
 describe("Dappnode Directory", function () {
   this.timeout(100000);
-  const ethProvider = new ethers.InfuraProvider(
-    "mainnet",
-    process.env.INFURA_MAINNET_KEY
+  const contract = new DappNodeDirectory(
+    `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_KEY}`
   );
-  const contract = new DappNodeDirectory(ethProvider);
 
   it(`should get directory pkgs`, async () => {
     const expectedResult = [

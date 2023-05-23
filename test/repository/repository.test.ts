@@ -18,14 +18,13 @@ describe("Dappnode Repository", function () {
 
   for (const ipfsUrl of ipfsUrls) {
     this.timeout(100000);
-    const ethProvider = new ethers.InfuraProvider(
-      "mainnet",
-      "e6c920580178424bbdf6dde266bfb5bd"
-    );
 
     const prysmDnpName = "prysm.dnp.dappnode.eth";
     const prysmVersion = "3.0.8";
-    const contract = new DappnodeRepository(ipfsUrl, ethProvider);
+    const contract = new DappnodeRepository(
+      ipfsUrl,
+      `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_KEY}`
+    );
 
     it(`[${ipfsUrl}] Should get and validate package version for Prysm:${prysmVersion}`, async () => {
       const expectedVersionAndIpfsHash = {

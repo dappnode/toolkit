@@ -14,12 +14,12 @@ export class DappNodeDirectory {
 
   /**
    * Class constructor
-   * @param ethProvider - The ethers provider to interact with the Ethereum network.
+   * @param ethUrl - The URL of the Ethereum node to connect to.
    */
-  constructor(ethProvider: ethers.Provider) {
+  constructor(ethUrl: string) {
     this.directoryContract = DAppNodePackageDirectory__factory.connect(
       directoryAddress,
-      ethProvider
+      new ethers.JsonRpcProvider(ethUrl)
     );
   }
 
