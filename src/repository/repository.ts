@@ -1,4 +1,3 @@
-import { ethers } from "ethers";
 import * as isIPFS from "is-ipfs";
 import {
   PkgRelease,
