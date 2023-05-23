@@ -37,7 +37,7 @@ export class DappNodeRegistry {
 
     this.registryContract = APMRegistry__factory.connect(
       this.contractAddress,
-      new ethers.JsonRpcProvider(ethUrl)
+      new ethers.JsonRpcProvider(ethUrl, "mainnet")
     );
   }
 

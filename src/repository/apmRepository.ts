@@ -15,7 +15,7 @@ export class ApmRepository {
    */
   constructor(ethUrl: string) {
     if (!ethUrl) throw new Error("Ethereum URL is required");
-    this.ethProvider = new ethers.JsonRpcProvider(ethUrl);
+    this.ethProvider = new ethers.JsonRpcProvider(ethUrl, "mainnet");
   }
 
   /**

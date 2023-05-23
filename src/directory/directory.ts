@@ -19,7 +19,7 @@ export class DappNodeDirectory {
   constructor(ethUrl: string) {
     this.directoryContract = DAppNodePackageDirectory__factory.connect(
       directoryAddress,
-      new ethers.JsonRpcProvider(ethUrl)
+      new ethers.JsonRpcProvider(ethUrl, "mainnet")
     );
   }
 
