@@ -54,6 +54,8 @@ jobs:
       - name: Run tests
         if: env.SHOULD_CONTINUE == 'true'
         run: npm run test
+        env:
+          INFURA_MAINNET_KEY: ${{ secrets.INFURA_MAINNET_KEY }}
 
       - name: Build TypeScript
         if: env.SHOULD_CONTINUE == 'true'
