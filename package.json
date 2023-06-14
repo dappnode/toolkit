@@ -5,9 +5,11 @@
   "description": "The DappNode Toolkit is a collection of shared smart contracts, types, and utility functions that can be used across various DappNode projects. This toolkit aims to simplify development by providing reusable code and a consistent set of interfaces and types. The package includes modules for ACL, APM, Apps, EVMScript, Params, Registry, and Types, each with their own set of submodules and functionalities. The toolkit is designed to be extensible, allowing for the easy addition of new modules as needed. Additionally, the toolkit includes comprehensive testing functionality and documentation to ensure the quality and usability of the code.",
   "main": "dist/index.js",
   "scripts": {
+    "postinstall": "patch-package",
     "tag-and-publish": "npm version patch && git push --follow-tags",
     "clean": "rimraf dist",
     "build": "npm run clean && npm run truffle:compile:v0.4 && npm run truffle:compile:v0.5 && npm run typechain && tsc",
+    "build:webpack": "npm run clean && npm run truffle:compile:v0.4 && npm run truffle:compile:v0.5 && npm run typechain && webpack --config webpack.config.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "typechain": "typechain --target ethers-v6 --out-dir ./src/typechain './truffle/contracts_build/contracts*/*.json' && node addExtensionJs.js",
@@ -44,7 +46,10 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typechain": "^8.1.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "webpack": "^5.86.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   },
   "dependencies": {
     "@dappnode/types": "^0.1.12",
@@ -56,7 +61,7 @@
     "ipfs-unixfs-exporter": "^13.1.5",
     "is-ipfs": "^8.0.1",
     "kubo-rpc-client": "^3.0.1",
-    "multiformats": "^11.0.2",
+    "patch-package": "^7.0.0",
     "semver": "^7.5.0",
     "yaml": "^2.2.2"
   },

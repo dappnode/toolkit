@@ -4,13 +4,13 @@ import {
   FileConfig,
   FileFormat,
   NodeArch,
-  DistributedFile,
   IPFSEntry,
+  DistributedFile,
+  Version,
 } from "./types.js";
 import { CID, IPFSHTTPClient, create } from "kubo-rpc-client";
 import { CarReader } from "@ipld/car";
 import { recursive as exporter } from "ipfs-unixfs-exporter";
-import { Version } from "multiformats";
 import path from "path";
 import fs from "fs";
 import stream from "stream";
@@ -118,7 +118,7 @@ export class DappnodeRepository extends ApmRepository {
     return {
       imageFile: this.getImageByArch(manifest, ipfsEntries, os),
       avatarFile: avatar
-        ? { hash: avatar.cid.toString(), size: avatar.size, source }
+        ? { hash: avatar.cid.toString(), size: Number(avatar.size), source }
         : undefined,
       manifest,
       compose: await this.getPkgAsset(
@@ -481,7 +481,8 @@ export class DappnodeRepository extends ApmRepository {
     } else {
       return {
         hash: imageAsset.cid.toString(),
-        size: imageAsset.size,
+        // bigint to number
+        size: Number(imageAsset.size),
         source, // TODO: consdier adding different sources
       };
     }
