@@ -53,9 +53,9 @@
     "ethers": "^6.5.1",
     "graphql": "^16.6.0",
     "graphql-request": "^6.0.0",
-    "ipfs-http-client": "^60.0.0",
     "ipfs-unixfs-exporter": "^13.1.5",
     "is-ipfs": "^8.0.1",
+    "kubo-rpc-client": "^3.0.1",
     "multiformats": "^11.0.2",
     "semver": "^7.5.0",
     "yaml": "^2.2.2"

@@ -4,7 +4,7 @@ import {
   Manifest,
   PrometheusTarget,
 } from "@dappnode/types";
-import { CID } from "ipfs-http-client";
+import { CID } from "kubo-rpc-client";
 
 /**
  * IPFS

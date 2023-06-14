@@ -7,7 +7,7 @@ import {
   DistributedFile,
   IPFSEntry,
 } from "./types.js";
-import { CID, IPFSHTTPClient, create } from "ipfs-http-client";
+import { CID, IPFSHTTPClient, create } from "kubo-rpc-client";
 import { CarReader } from "@ipld/car";
 import { recursive as exporter } from "ipfs-unixfs-exporter";
 import { Version } from "multiformats";
