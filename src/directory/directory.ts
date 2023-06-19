@@ -5,6 +5,7 @@ import {
 } from "../typechain/index.js";
 import { DirectoryDnp, directoryDnpStatus } from "./types.js";
 import { directoryAddress } from "./params.js";
+import { isEnsDomain } from "@dappnode/types";
 
 /**
  * DappNodeDirectory is a class to interact with the DAppNode Directory Contract.
@@ -107,7 +108,7 @@ export class DappNodeDirectory {
       } = await this.directoryContract.getPackage(index);
       const status = parseInt(statusBn.toString());
 
-      if (!this.isEnsDomain(name) || status === 0) return;
+      if (!isEnsDomain(name) || status === 0) return;
 
       const featuredIndex = featuredIndexes.indexOf(index);
       return {
@@ -139,21 +140,5 @@ export class DappNodeDirectory {
       ...featured.sort((a, b) => a.featuredIndex - b.featuredIndex),
       ...notFeatured.sort((a, b) => b.position - a.position),
     ];
-  }
-
-  /**
-   * Checks if a domain name is a valid ENS domain.
-   * @param ensDomain - The domain name to check.
-   * @returns - True if the domain name is valid, false otherwise.
-   */
-  private isEnsDomain(ensDomain: string): boolean {
-    const supportedDomains = ["eth"];
-
-    if (!ensDomain || typeof ensDomain !== "string") return false;
-    if (ensDomain.includes("/")) return false;
-    if (!ensDomain.includes(".")) return false;
-
-    const domain = ensDomain.split(".").slice(-1)[0] || "";
-    return supportedDomains.includes(domain);
   }
 }

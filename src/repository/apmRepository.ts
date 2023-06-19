@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { valid, parse } from "semver";
 import { Repo__factory, Repo } from "../typechain/index.js";
 import { ApmRepoVersionReturn, ApmVersionRaw } from "./types.js";
+import { isEnsDomain } from "@dappnode/types";
 
 /**
  * ApmRepository is a class to interact with the DAppNode APM Repository Contract.
@@ -98,6 +99,9 @@ export class ApmRepository {
    * @returns - The valid DNP name.
    */
   private ensureValidDnpName(dnpName: string): string {
+    if (!isEnsDomain(dnpName))
+      throw Error(`Invalid ENS domain for dnpName ${dnpName}`);
+
     if (!dnpName.endsWith(".dappnode.eth"))
       throw Error(`Invalid dnpName ${dnpName}`);
     return dnpName;
