@@ -47,7 +47,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@dappnode/types": "^0.1.12",
+    "@dappnode/types": "^0.1.19",
     "@ipld/car": "^5.1.1",
     "esm": "^3.2.25",
     "ethers": "^6.5.1",
