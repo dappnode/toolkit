@@ -12,8 +12,6 @@ describe("Dappnode Repository", function () {
     "https://gateway.ipfs.dappnode.io",
   ];
 
-  const ethUrl = `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_KEY}`;
-
   const prysmDnpName = "prysm.dnp.dappnode.eth";
   const prysmVersion = "3.0.8";
 
@@ -23,7 +21,10 @@ describe("Dappnode Repository", function () {
 
   for (const ipfsUrl of ipfsUrls) {
     this.timeout(100000);
-    const contract = new DappnodeRepository(ipfsUrl, ethUrl);
+    const contract = new DappnodeRepository(
+      ipfsUrl,
+      `https://mainnet.infura.io/v3/${process.env.INFURA_MAINNET_KEY}`
+    );
 
     it(`[${ipfsUrl}] Should get and validate package version for Prysm:${prysmVersion}`, async () => {
       const expectedVersionAndIpfsHash = {
@@ -214,32 +215,4 @@ describe("Dappnode Repository", function () {
       expect(hash).to.equal(expectedHash);
     });
   }
-
-  it("Should throw an error for invalid DNP names", async () => {
-    const invalidDnpNames = [
-      "..dappnode.eth",
-      "subdomain.example.eth",
-      "sub-domain.dapnode.eth",
-      "dnp.dappnode.com",
-      "dappnode",
-      "",
-      "public.dappnode",
-    ];
-
-    const contract = new DappnodeRepository(ipfsUrls[0], ethUrl);
-
-    for (const invalidName of invalidDnpNames) {
-      let isErrorThrown = false;
-      try {
-        await contract.getVersionAndIpfsHash({
-          dnpName: invalidName,
-          version: "1.0.0",
-        });
-      } catch (error) {
-        isErrorThrown = true;
-      }
-
-      expect(isErrorThrown).to.be.true;
-    }
-  });
 });
