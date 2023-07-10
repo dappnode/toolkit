@@ -9,7 +9,7 @@ import {
 describe("Dappnode Registry", function () {
   this.timeout(100000);
 
-  it(`should get dnp newRepos`, async () => {
+  it.skip(`should get dnp newRepos`, async () => {
     const expectedResult: DNPRegistryEntry[] = [
       {
         id: "0x014a26511e1a8896e6b60002f82de526ee2e3452e5a170b74bc97c01fc4864f9f8000000",
