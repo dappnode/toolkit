@@ -30,7 +30,10 @@ export class ApmRepository {
     const contractAddress = await this.ethProvider.resolveName(
       this.ensureValidDnpName(dnpName)
     );
-    if (!contractAddress) throw new Error(`Could not resolve name ${dnpName}`);
+
+    // This error should include "NOREPO" in order to handle it properly in SDK publish code
+    if (!contractAddress)
+      throw new Error(`Could not resolve name ${dnpName}: NOREPO`);
     return Repo__factory.connect(contractAddress, this.ethProvider);
   }
 
