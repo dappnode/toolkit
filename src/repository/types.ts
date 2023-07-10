@@ -4,7 +4,7 @@ import {
   Manifest,
   PrometheusTarget,
 } from "@dappnode/types";
-import { CID } from "kubo-rpc-client";
+import { Exportable } from "ipfs-unixfs-exporter";
 
 /**
  * IPFS
@@ -24,18 +24,12 @@ export type NodeArch =
   | "x32"
   | "x64";
 
-/**
- * TODO: the interface IPFSEntry is not properly exported by library ipfs-core-types. If importing it directly then the compiler throws an error. Version: 0.14.0
- */
-export interface IPFSEntry {
-  readonly type: "dir" | "file";
-  readonly cid: CID;
-  readonly name: string;
-  readonly path: string;
-  mode?: number;
-  mtime?: any;
-  size: number;
-}
+export type Version = 0 | 1;
+
+export type IPFSEntry = Pick<
+  Exportable<any>,
+  "type" | "cid" | "name" | "path" | "size"
+>;
 
 /**
  * PKG release assets
