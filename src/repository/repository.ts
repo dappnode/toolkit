@@ -115,6 +115,13 @@ export class DappnodeRepository extends ApmRepository {
       )?.cid.toString() || ""
     );
     const avatar = this.getAssetIpfsEntry(ipfsEntries, releaseFiles.avatar);
+
+    // pin and bypass error
+    await this.ipfs.pin
+      .add(this.sanitizeIpfsPath(contentUri), { timeout: this.timeout })
+      .catch(() => {
+        /* bypass error */
+      });
     return {
       imageFile: this.getImageByArch(manifest, ipfsEntries, os),
       avatarFile: avatar
