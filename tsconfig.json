@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2021",
+    "target": "ESNext",
     "module": "ESNext",
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*", "src/*"]
