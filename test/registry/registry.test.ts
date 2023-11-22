@@ -6,7 +6,10 @@ import {
   DappNodeRegistry,
 } from "../../src/registry/index.js";
 
-describe("Dappnode Registry", function () {
+// TODO: graphs must be published in the graph, preferably arbitrum network
+// also the logic in the registry would have to be updated to take into account the Arbitrum network
+
+describe.skip("Dappnode Registry", function () {
   this.timeout(100000);
 
   it.skip(`should get dnp newRepos`, async () => {
